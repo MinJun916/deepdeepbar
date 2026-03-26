@@ -17,6 +17,7 @@ const AdminAddPage = () => {
           </div>
           <Link
             href="/admin"
+            prefetch={false}
             className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm"
           >
             관리자 홈
