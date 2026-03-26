@@ -32,7 +32,9 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
     return (
       <main className="mx-auto min-h-screen w-full max-w-4xl p-6">
         <h1 className="text-2xl font-semibold">메뉴 관리</h1>
-        <p className="mt-3 text-sm text-red-600">`.env.local`에 `SUPABASE_SECRET_KEY`를 추가해 주세요.</p>
+        <p className="mt-3 text-sm text-red-600">
+          `.env.local`에 `SUPABASE_SECRET_KEY`를 추가해 주세요.
+        </p>
       </main>
     );
   }
@@ -69,13 +71,16 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
 
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
-      <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-10 sm:px-6">
+      <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
         <header className="mb-6 flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium tracking-[0.22em] text-[#876a51]">ADMIN / MANAGE</p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight">메뉴 검색/수정/삭제</h1>
           </div>
-          <Link href="/admin" className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm">
+          <Link
+            href="/admin"
+            className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm"
+          >
             관리자 홈
           </Link>
         </header>
@@ -99,7 +104,10 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
               </option>
             ))}
           </select>
-          <button type="submit" className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white">
+          <button
+            type="submit"
+            className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white"
+          >
             검색
           </button>
         </form>
@@ -175,12 +183,19 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
                   className="min-h-16 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
                 />
                 <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" name="is_signature" defaultChecked={Boolean(menu.is_signature)} />
+                  <input
+                    type="checkbox"
+                    name="is_signature"
+                    defaultChecked={Boolean(menu.is_signature)}
+                  />
                   is_signature
                 </label>
               </div>
               <div className="mt-3 flex gap-2">
-                <button type="submit" className="rounded-lg bg-[#1f2937] px-3 py-2 text-sm text-white">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-[#1f2937] px-3 py-2 text-sm text-white"
+                >
                   저장
                 </button>
                 <button

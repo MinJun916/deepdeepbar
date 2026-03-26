@@ -5,7 +5,7 @@ import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
 const AdminPage = () => {
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
-      <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-10 sm:px-6">
+      <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
         <header className="mb-8">
           <p className="text-xs font-medium tracking-[0.22em] text-[#876a51]">DEEP DEEP BAR</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Menu Admin</h1>
@@ -26,7 +26,9 @@ const AdminPage = () => {
           >
             <p className="text-xs font-semibold tracking-wide text-[#876a51]">CREATE</p>
             <h2 className="mt-2 text-xl font-semibold">메뉴 추가</h2>
-            <p className="mt-2 text-sm text-[#4b5563]">새 칵테일/위스키/사이드 메뉴를 등록합니다.</p>
+            <p className="mt-2 text-sm text-[#4b5563]">
+              새 칵테일/위스키/사이드 메뉴를 등록합니다.
+            </p>
           </Link>
 
           <Link
@@ -35,7 +37,9 @@ const AdminPage = () => {
           >
             <p className="text-xs font-semibold tracking-wide text-[#876a51]">MANAGE</p>
             <h2 className="mt-2 text-xl font-semibold">메뉴 관리</h2>
-            <p className="mt-2 text-sm text-[#4b5563]">검색/카테고리 필터로 메뉴를 찾아 수정 또는 삭제합니다.</p>
+            <p className="mt-2 text-sm text-[#4b5563]">
+              검색/카테고리 필터로 메뉴를 찾아 수정 또는 삭제합니다.
+            </p>
           </Link>
         </section>
       </div>
