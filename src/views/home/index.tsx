@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
+import Footer from '@/components/footer';
 import MenuCard, { type CocktailMenu } from '@/components/menu/menuCard';
 
 const categories = [
@@ -80,6 +81,8 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
             </div>
           )}
         </section>
+
+        <Footer />
       </div>
     </main>
   );
