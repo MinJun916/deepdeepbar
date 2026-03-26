@@ -1,6 +1,6 @@
 export type CocktailMenu = {
   id: string;
-  category: '칵테일' | '위스키' | '논알콜' | '하이볼' | '사이드';
+  category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'side';
   name: string;
   nameEn: string;
   description: string;
