@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import Footer from '@/components/footer';
 import MenuCard, { type CocktailMenu } from '@/components/menu/menuCard';
+import ScrollToTopButton from '@/components/scrollToTopButton';
 
 const categories = [
   { key: 'all', label: '전체' },
@@ -84,6 +85,7 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
 
         <Footer />
       </div>
+      <ScrollToTopButton />
     </main>
   );
 };
