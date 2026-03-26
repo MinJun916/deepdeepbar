@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DeepDeepBar QR Menu
 
-## Getting Started
+혼술바/칵테일바를 위한 모바일 우선 QR 메뉴판 프로젝트입니다.
 
-First, run the development server:
+- Next.js App Router 기반 메뉴판 화면
+- Supabase 연동으로 메뉴 데이터 조회
+- `/admin`에서 Dashboard 없이 메뉴 추가/수정/삭제
+- `/admin` 경로 Basic Auth 최소 보안 적용
+
+## 실행 방법
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 `http://localhost:3000` 접속.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 환경변수
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+프로젝트 루트 `.env.local`:
 
-## Learn More
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
+SUPABASE_SECRET_KEY=
 
-To learn more about Next.js, take a look at the following resources:
+# optional (기본값: Menu)
+NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE=Menu
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# /admin 보호용 Basic Auth
+ADMIN_BASIC_AUTH_USERNAME=
+ADMIN_BASIC_AUTH_PASSWORD=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+설명:
 
-## Deploy on Vercel
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase 프로젝트 URL
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`: 공개 키(읽기/기본 클라이언트)
+- `SUPABASE_SECRET_KEY`: 서버 전용 비밀 키(어드민 CRUD용)
+- `NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE`: 메뉴 테이블명 (기본 `Menu`)
+- `ADMIN_BASIC_AUTH_*`: `/admin` 접근 보호 계정
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Supabase 테이블 컬럼 기준
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+현재 앱은 아래 컬럼명을 기준으로 동작합니다.
+
+- `id` (uuid)
+- `category` (enum: `cocktail`, `whisky`, `non-alcohol`, `highball`, `side`)
+- `name`
+- `name_en`
+- `description`
+- `price` (int)
+- `abv` (float/numeric nullable)
+- `taste_note`
+- `tags` (jsonb array)
+- `is_signature` (bool)
+
+## 라우트
+
+- `/` : 사용자 메뉴판
+- `/admin` : 어드민 허브
+- `/admin/add` : 메뉴 추가
+- `/admin/manage` : 검색/카테고리 필터 + 수정/삭제
+
+## 데이터 불러오기/관리 구조
+
+- 사용자 메뉴판: `src/app/page.tsx`에서 Supabase 조회 후 `src/views/home`로 전달
+- 어드민 CRUD: `src/app/admin/actions.ts` 서버 액션 + `src/lib/supabase/admin.ts`
+- `/admin` 보호: `src/middleware.ts` Basic Auth
+
+## 참고 파일
+
+- 샘플 CSV: `cocktails_mock.csv`
+- 기본 폰트: `public/fonts/PretendardVariable.woff2`
