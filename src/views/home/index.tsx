@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 
 import Footer from '@/components/footer';
+import IntroOverlay from '@/components/introOverlay';
 import MenuCard, { type CocktailMenu } from '@/components/menu/menuCard';
 import ScrollToTopButton from '@/components/scrollToTopButton';
 
@@ -36,6 +37,7 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
+      <IntroOverlay />
       <div className="mx-auto w-full max-w-3xl px-4 pt-8 pb-16 sm:px-6 sm:pt-10">
         <header className="mb-7 sm:mb-9">
           <p className="text-xs font-medium tracking-[0.24em] text-[#876a51]">DEEP DEEP BAR</p>
