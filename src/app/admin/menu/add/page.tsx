@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import MenuPriceEditor from '@/components/admin/menuPriceEditor';
 import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
 
 import { createMenuAction } from '../../actions';
@@ -63,22 +64,13 @@ const AdminAddPage = () => {
               className="min-h-24 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
               required
             />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                name="price"
-                type="number"
-                placeholder="price"
-                className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                required
-              />
-              <input
-                name="abv"
-                type="number"
-                step="0.1"
-                placeholder="abv (optional)"
-                className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-              />
-            </div>
+            <input
+              name="abv"
+              type="number"
+              step="0.1"
+              placeholder="abv (optional)"
+              className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
+            />
             <input
               name="taste_note"
               placeholder="taste_note"
@@ -91,6 +83,7 @@ const AdminAddPage = () => {
               className="min-h-20 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
               defaultValue="[]"
             />
+            <MenuPriceEditor name="price_options" />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="is_signature" />
               is_signature

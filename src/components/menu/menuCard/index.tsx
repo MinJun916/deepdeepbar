@@ -1,10 +1,16 @@
+export type MenuPriceOption = {
+  priceType: 'default' | 'shot' | 'bottle' | string;
+  price: number;
+  displayOrder: number;
+};
+
 export type CocktailMenu = {
   id: string;
   category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'side';
   name: string;
   nameEn: string;
   description: string;
-  price: number;
+  priceOptions?: MenuPriceOption[];
   tasteNote: string;
   abv: string;
   tags: string[];
@@ -17,6 +23,17 @@ type MenuCardProps = {
 };
 
 const MenuCard = ({ menu, currency }: MenuCardProps) => {
+  const sortedPriceOptions = [...(menu.priceOptions ?? [])].sort(
+    (a, b) => a.displayOrder - b.displayOrder,
+  );
+
+  const formatPriceLabel = (priceType: string) => {
+    if (priceType === 'default') return '';
+    if (priceType === 'shot') return '샷';
+    if (priceType === 'bottle') return '보틀';
+    return priceType;
+  };
+
   return (
     <article className="rounded-2xl border border-[#e0d5c8] bg-[linear-gradient(160deg,rgba(252,248,242,0.96)_0%,rgba(245,238,229,0.96)_100%)] p-4 shadow-[0_12px_26px_rgba(15,23,42,0.08)] backdrop-blur sm:p-5">
       <div className="flex items-start justify-between gap-4">
@@ -33,9 +50,22 @@ const MenuCard = ({ menu, currency }: MenuCardProps) => {
           </div>
           <p className="mt-1 text-xs font-medium tracking-wide text-[#6b7280]">{menu.nameEn}</p>
         </div>
-        <p className="shrink-0 text-base font-semibold text-[#374151]">
-          {currency.format(menu.price)}원
-        </p>
+        {sortedPriceOptions.length > 0 ? (
+          <div className="shrink-0 text-right">
+            {sortedPriceOptions.map((option) => (
+              <p
+                key={`${menu.id}-${option.priceType}`}
+                className="text-sm font-semibold text-[#374151]"
+              >
+                {formatPriceLabel(option.priceType)
+                  ? `${formatPriceLabel(option.priceType)} ${currency.format(option.price)}원`
+                  : `${currency.format(option.price)}원`}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="shrink-0 text-sm font-semibold text-[#6b7280]">가격 문의</p>
+        )}
       </div>
 
       <p className="mt-3 text-sm leading-6 break-keep text-[#374151]">{menu.description}</p>

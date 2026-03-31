@@ -11,6 +11,7 @@ const menuTable =
   process.env.NEXT_PUBLIC_SUPABASE_MENUS_TABLE ??
   process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ??
   'menus';
+const menuPricesTable = process.env.NEXT_PUBLIC_SUPABASE_MENU_PRICES_TABLE ?? 'menu_prices';
 const recipeTable = process.env.NEXT_PUBLIC_SUPABASE_RECIPES_TABLE ?? 'recipes';
 const recipeStepsTable = process.env.NEXT_PUBLIC_SUPABASE_RECIPE_STEPS_TABLE ?? 'recipe_steps';
 
@@ -76,12 +77,35 @@ const parseAbv = (raw: FormDataEntryValue | null) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const parsePrice = (raw: FormDataEntryValue | null) => {
-  const parsed = Number.parseInt(String(raw ?? '0'), 10);
-  return Number.isFinite(parsed) ? parsed : 0;
+const parseText = (raw: FormDataEntryValue | null) => String(raw ?? '').trim();
+const parsePriceType = (value: string) => {
+  if (value === 'default' || value === 'shot' || value === 'bottle') {
+    return value;
+  }
+
+  return 'default';
 };
 
-const parseText = (raw: FormDataEntryValue | null) => String(raw ?? '').trim();
+const parseMenuPriceLines = (raw: FormDataEntryValue | null) =>
+  parseText(raw)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const [typeRaw, priceRaw] = line.split('|').map((part) => part.trim());
+      const price = Number.parseInt(priceRaw ?? '', 10);
+      if (!Number.isFinite(price)) {
+        return null;
+      }
+
+      return {
+        price_type: parsePriceType(typeRaw),
+        price,
+        display_order: index + 1,
+        is_active: true,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
 const parseStepLines = (raw: FormDataEntryValue | null) =>
   parseText(raw)
@@ -95,22 +119,42 @@ const parseStepLines = (raw: FormDataEntryValue | null) =>
 
 export const createMenuAction = async (formData: FormData) => {
   const supabase = createSupabaseAdminClient();
+  const priceOptions = parseMenuPriceLines(formData.get('price_options'));
 
   const payload = {
     category: String(formData.get('category')),
     name: String(formData.get('name')).trim(),
     name_en: String(formData.get('name_en')).trim(),
     description: String(formData.get('description')).trim(),
-    price: parsePrice(formData.get('price')),
     abv: parseAbv(formData.get('abv')),
     taste_note: String(formData.get('taste_note')).trim(),
     tags: parseTags(formData.get('tags')),
     is_signature: formData.get('is_signature') === 'on',
   };
 
-  const { error } = await supabase.schema('public').from(menuTable).insert(payload);
+  const { data: menuRow, error } = await supabase
+    .schema('public')
+    .from(menuTable)
+    .insert(payload)
+    .select('id')
+    .single();
   if (error) {
     throw new Error(`Menu insert failed: ${error.message}`);
+  }
+
+  const menuId = menuRow.id as string;
+  if (priceOptions.length > 0) {
+    const pricesPayload = priceOptions.map((option) => ({
+      menu_id: menuId,
+      ...option,
+    }));
+    const { error: priceError } = await supabase
+      .schema('public')
+      .from(menuPricesTable)
+      .insert(pricesPayload);
+    if (priceError) {
+      throw new Error(`Menu price insert failed: ${priceError.message}`);
+    }
   }
 
   revalidatePath('/');
@@ -151,7 +195,10 @@ export const createRecipeAction = async (formData: FormData) => {
       recipe_id: recipeId,
       ...step,
     }));
-    const { error: stepError } = await supabase.schema('public').from(recipeStepsTable).insert(stepsPayload);
+    const { error: stepError } = await supabase
+      .schema('public')
+      .from(recipeStepsTable)
+      .insert(stepsPayload);
     if (stepError) {
       throw new Error(`Recipe step insert failed: ${stepError.message}`);
     }
@@ -195,7 +242,10 @@ export const updateRecipeAction = async (formData: FormData) => {
       recipe_id: id,
       ...step,
     }));
-    const { error: stepError } = await supabase.schema('public').from(recipeStepsTable).insert(stepsPayload);
+    const { error: stepError } = await supabase
+      .schema('public')
+      .from(recipeStepsTable)
+      .insert(stepsPayload);
     if (stepError) {
       throw new Error(`Recipe step update failed: ${stepError.message}`);
     }
@@ -230,13 +280,13 @@ export const deleteRecipeAction = async (formData: FormData) => {
 export const updateMenuAction = async (formData: FormData) => {
   const supabase = createSupabaseAdminClient();
   const id = String(formData.get('id'));
+  const priceOptions = parseMenuPriceLines(formData.get('price_options'));
 
   const payload = {
     category: String(formData.get('category')),
     name: String(formData.get('name')).trim(),
     name_en: String(formData.get('name_en')).trim(),
     description: String(formData.get('description')).trim(),
-    price: parsePrice(formData.get('price')),
     abv: parseAbv(formData.get('abv')),
     taste_note: String(formData.get('taste_note')).trim(),
     tags: parseTags(formData.get('tags')),
@@ -246,6 +296,29 @@ export const updateMenuAction = async (formData: FormData) => {
   const { error } = await supabase.schema('public').from(menuTable).update(payload).eq('id', id);
   if (error) {
     throw new Error(`Menu update failed: ${error.message}`);
+  }
+
+  const { error: deletePriceError } = await supabase
+    .schema('public')
+    .from(menuPricesTable)
+    .delete()
+    .eq('menu_id', id);
+  if (deletePriceError) {
+    throw new Error(`Menu price reset failed: ${deletePriceError.message}`);
+  }
+
+  if (priceOptions.length > 0) {
+    const pricesPayload = priceOptions.map((option) => ({
+      menu_id: id,
+      ...option,
+    }));
+    const { error: priceError } = await supabase
+      .schema('public')
+      .from(menuPricesTable)
+      .insert(pricesPayload);
+    if (priceError) {
+      throw new Error(`Menu price update failed: ${priceError.message}`);
+    }
   }
 
   revalidatePath('/');
@@ -258,6 +331,15 @@ export const updateMenuAction = async (formData: FormData) => {
 export const deleteMenuAction = async (formData: FormData) => {
   const supabase = createSupabaseAdminClient();
   const id = String(formData.get('id'));
+
+  const { error: deletePriceError } = await supabase
+    .schema('public')
+    .from(menuPricesTable)
+    .delete()
+    .eq('menu_id', id);
+  if (deletePriceError) {
+    throw new Error(`Menu price delete failed: ${deletePriceError.message}`);
+  }
 
   const { error } = await supabase.schema('public').from(menuTable).delete().eq('id', id);
   if (error) {

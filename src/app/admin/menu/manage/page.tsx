@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import MenuPriceEditor from '@/components/admin/menuPriceEditor';
 import { canUseSupabaseAdmin, createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 import { deleteMenuAction, updateMenuAction } from '../../actions';
@@ -10,11 +11,19 @@ type MenuRow = {
   name: string;
   name_en: string;
   description: string;
-  price: number;
   abv: number | null;
   taste_note: string;
   tags: string[] | null;
   is_signature: boolean | null;
+  menu_prices:
+    | {
+        id: string;
+        price_type: 'default' | 'shot' | 'bottle' | string;
+        price: number;
+        display_order: number;
+        is_active: boolean;
+      }[]
+    | null;
 };
 
 type SearchParams = Promise<{
@@ -46,7 +55,9 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
   const { data, error } = await supabase
     .schema('public')
     .from(menuTable)
-    .select('id, category, name, name_en, description, price, abv, taste_note, tags, is_signature')
+    .select(
+      'id, category, name, name_en, description, abv, taste_note, tags, is_signature, menu_prices(id, price_type, price, display_order, is_active)',
+    )
     .order('name', { ascending: true });
 
   if (error) {
@@ -159,22 +170,13 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
                   className="min-h-24 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
                   required
                 />
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <input
-                    name="price"
-                    type="number"
-                    defaultValue={menu.price}
-                    className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                    required
-                  />
-                  <input
-                    name="abv"
-                    type="number"
-                    step="0.1"
-                    defaultValue={menu.abv ?? ''}
-                    className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                  />
-                </div>
+                <input
+                  name="abv"
+                  type="number"
+                  step="0.1"
+                  defaultValue={menu.abv ?? ''}
+                  className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
+                />
                 <input
                   name="taste_note"
                   defaultValue={menu.taste_note}
@@ -185,6 +187,14 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
                   name="tags"
                   defaultValue={JSON.stringify(menu.tags ?? [])}
                   className="min-h-16 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
+                />
+                <MenuPriceEditor
+                  name="price_options"
+                  defaultSerializedValue={(menu.menu_prices ?? [])
+                    .filter((option) => option.is_active)
+                    .sort((a, b) => a.display_order - b.display_order)
+                    .map((option) => `${option.price_type}|${option.price}`)
+                    .join('\n')}
                 />
                 <label className="flex items-center gap-2 text-sm">
                   <input

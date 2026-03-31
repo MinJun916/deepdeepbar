@@ -67,7 +67,10 @@ const AdminRecipePage = async () => {
         ) : (
           <section className="space-y-3">
             {recipes.map((recipe) => (
-              <article key={recipe.id} className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5">
+              <article
+                key={recipe.id}
+                className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5"
+              >
                 <h2 className="text-xl font-semibold">{recipe.menus?.name ?? '이름 없는 메뉴'}</h2>
                 <p className="mt-1 text-base text-[#6b7280]">{recipe.menus?.name_en ?? '-'}</p>
 
