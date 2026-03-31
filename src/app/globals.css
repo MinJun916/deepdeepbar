@@ -93,3 +93,12 @@ body {
   text-shadow: 0 8px 26px rgba(90, 63, 38, 0.2);
   animation: intro-message-reveal 2.1s ease forwards;
 }
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
