@@ -13,6 +13,7 @@ const categories = [
   { key: 'whisky', label: '위스키' },
   { key: 'non-alcohol', label: '논알콜' },
   { key: 'highball', label: '하이볼' },
+  { key: 'beer', label: '맥주' },
   { key: 'side', label: '사이드' },
 ] as const;
 
@@ -49,7 +50,7 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
           </p>
         </header>
 
-        <section className="-mx-1 mb-5 overflow-x-auto px-1 sm:mb-6">
+        <section className="hide-scrollbar -mx-1 mb-5 overflow-x-auto px-1 sm:mb-6">
           <div className="flex min-w-max gap-2">
             {categories.map((category) => {
               const isActive = selectedCategory === category.key;
