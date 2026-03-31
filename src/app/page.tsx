@@ -12,6 +12,7 @@ type CocktailRow = {
   taste_note: string;
   tags: string[] | null;
   is_signature: boolean | null;
+  is_display: boolean | null;
 };
 
 type MenuPriceRow = {
@@ -41,9 +42,13 @@ const HomePage = async () => {
   const { data: menuRows, error: menuError } = await supabase
     .schema('public')
     .from(menusTable)
-    .select('id, category, name, name_en, description, abv, taste_note, tags, is_signature', {
-      count: 'exact',
-    });
+    .select(
+      'id, category, name, name_en, description, abv, taste_note, tags, is_signature, is_display',
+      {
+        count: 'exact',
+      },
+    )
+    .eq('is_display', true);
 
   if (menuError) {
     console.error(`Failed to fetch menus from public.${menusTable}:`, menuError.message);

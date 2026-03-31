@@ -88,6 +88,10 @@ const AdminAddPage = () => {
               <input type="checkbox" name="is_signature" />
               is_signature
             </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="is_display" defaultChecked />
+              is_display
+            </label>
             <button
               type="submit"
               className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white"

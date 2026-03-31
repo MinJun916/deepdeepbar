@@ -130,6 +130,7 @@ export const createMenuAction = async (formData: FormData) => {
     taste_note: String(formData.get('taste_note')).trim(),
     tags: parseTags(formData.get('tags')),
     is_signature: formData.get('is_signature') === 'on',
+    is_display: formData.get('is_display') === 'on',
   };
 
   const { data: menuRow, error } = await supabase
@@ -291,6 +292,7 @@ export const updateMenuAction = async (formData: FormData) => {
     taste_note: String(formData.get('taste_note')).trim(),
     tags: parseTags(formData.get('tags')),
     is_signature: formData.get('is_signature') === 'on',
+    is_display: formData.get('is_display') === 'on',
   };
 
   const { error } = await supabase.schema('public').from(menuTable).update(payload).eq('id', id);

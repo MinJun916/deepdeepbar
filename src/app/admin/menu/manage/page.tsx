@@ -1,9 +1,7 @@
 import Link from 'next/link';
 
-import MenuPriceEditor from '@/components/admin/menuPriceEditor';
+import MenuManageClient from '@/components/admin/menuManageClient';
 import { canUseSupabaseAdmin, createSupabaseAdminClient } from '@/lib/supabase/admin';
-
-import { deleteMenuAction, updateMenuAction } from '../../actions';
 
 type MenuRow = {
   id: string;
@@ -15,6 +13,7 @@ type MenuRow = {
   taste_note: string;
   tags: string[] | null;
   is_signature: boolean | null;
+  is_display: boolean | null;
   menu_prices:
     | {
         id: string;
@@ -26,20 +25,12 @@ type MenuRow = {
     | null;
 };
 
-type SearchParams = Promise<{
-  q?: string;
-  category?: string;
-}>;
-
-const categoryOptions = ['all', 'cocktail', 'whisky', 'non-alcohol', 'highball', 'beer', 'side'] as const;
 const menuTable =
   process.env.NEXT_PUBLIC_SUPABASE_MENUS_TABLE ??
   process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ??
   'menus';
 
-const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams }) => {
-  const { q = '', category = 'all' } = await searchParams;
-
+const AdminManagePage = async () => {
   if (!canUseSupabaseAdmin) {
     return (
       <main className="mx-auto min-h-screen w-full max-w-4xl p-6">
@@ -56,7 +47,7 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
     .schema('public')
     .from(menuTable)
     .select(
-      'id, category, name, name_en, description, abv, taste_note, tags, is_signature, menu_prices(id, price_type, price, display_order, is_active)',
+      'id, category, name, name_en, description, abv, taste_note, tags, is_signature, is_display, menu_prices(id, price_type, price, display_order, is_active)',
     )
     .order('name', { ascending: true });
 
@@ -70,18 +61,6 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
   }
 
   const rows = (data as MenuRow[] | null) ?? [];
-  const keyword = q.trim().toLowerCase();
-
-  const filteredRows = rows.filter((menu) => {
-    const matchedCategory = category === 'all' || menu.category === category;
-    const matchedKeyword =
-      !keyword ||
-      menu.name.toLowerCase().includes(keyword) ||
-      menu.name_en.toLowerCase().includes(keyword) ||
-      menu.description.toLowerCase().includes(keyword);
-
-    return matchedCategory && matchedKeyword;
-  });
 
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
@@ -99,135 +78,7 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
             관리자 홈
           </Link>
         </header>
-
-        <form className="mb-5 grid gap-3 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4 sm:grid-cols-[1fr_180px_auto]">
-          <input
-            type="text"
-            name="q"
-            defaultValue={q}
-            placeholder="이름/영문명/설명 검색"
-            className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-          />
-          <select
-            name="category"
-            defaultValue={category}
-            className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-          >
-            {categoryOptions.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white"
-          >
-            검색
-          </button>
-        </form>
-
-        <p className="mb-3 text-sm text-[#4b5563]">검색 결과 {filteredRows.length}건</p>
-
-        <section className="space-y-3">
-          {filteredRows.map((menu) => (
-            <form
-              key={menu.id}
-              action={updateMenuAction}
-              className="rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4"
-            >
-              <input type="hidden" name="id" value={menu.id} />
-              <div className="grid gap-2">
-                <select
-                  name="category"
-                  className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                  defaultValue={menu.category}
-                  required
-                >
-                  {categoryOptions
-                    .filter((item) => item !== 'all')
-                    .map((item) => (
-                      <option key={item} value={item}>
-                        {item}
-                      </option>
-                    ))}
-                </select>
-                <input
-                  name="name"
-                  defaultValue={menu.name}
-                  className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                  required
-                />
-                <input
-                  name="name_en"
-                  defaultValue={menu.name_en}
-                  className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                  required
-                />
-                <textarea
-                  name="description"
-                  defaultValue={menu.description}
-                  className="min-h-24 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                  required
-                />
-                <input
-                  name="abv"
-                  type="number"
-                  step="0.1"
-                  defaultValue={menu.abv ?? ''}
-                  className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                />
-                <input
-                  name="taste_note"
-                  defaultValue={menu.taste_note}
-                  className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                  required
-                />
-                <textarea
-                  name="tags"
-                  defaultValue={JSON.stringify(menu.tags ?? [])}
-                  className="min-h-16 rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-                />
-                <MenuPriceEditor
-                  name="price_options"
-                  defaultSerializedValue={(menu.menu_prices ?? [])
-                    .filter((option) => option.is_active)
-                    .sort((a, b) => a.display_order - b.display_order)
-                    .map((option) => `${option.price_type}|${option.price}`)
-                    .join('\n')}
-                />
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="is_signature"
-                    defaultChecked={Boolean(menu.is_signature)}
-                  />
-                  is_signature
-                </label>
-              </div>
-              <div className="mt-3 flex gap-2">
-                <button
-                  type="submit"
-                  className="rounded-lg bg-[#1f2937] px-3 py-2 text-sm text-white"
-                >
-                  저장
-                </button>
-                <button
-                  type="submit"
-                  formAction={deleteMenuAction}
-                  className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
-                >
-                  삭제
-                </button>
-              </div>
-            </form>
-          ))}
-          {filteredRows.length === 0 ? (
-            <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
-              조건에 맞는 메뉴가 없습니다.
-            </div>
-          ) : null}
-        </section>
+        <MenuManageClient rows={rows} />
       </div>
     </main>
   );
