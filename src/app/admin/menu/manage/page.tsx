@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { canUseSupabaseAdmin, createSupabaseAdminClient } from '@/lib/supabase/admin';
 
-import { deleteMenuAction, updateMenuAction } from '../actions';
+import { deleteMenuAction, updateMenuAction } from '../../actions';
 
 type MenuRow = {
   id: string;
@@ -78,7 +78,7 @@ const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams })
             <h1 className="mt-2 text-2xl font-semibold tracking-tight">메뉴 검색/수정/삭제</h1>
           </div>
           <Link
-            href="/admin"
+            href="/admin/menu"
             prefetch={false}
             className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm"
           >

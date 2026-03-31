@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
 
-import { createMenuAction } from '../actions';
+import { createMenuAction } from '../../actions';
 
 const categoryOptions = ['cocktail', 'whisky', 'non-alcohol', 'highball', 'side'] as const;
 
@@ -16,7 +16,7 @@ const AdminAddPage = () => {
             <h1 className="mt-2 text-2xl font-semibold tracking-tight">메뉴 추가</h1>
           </div>
           <Link
-            href="/admin"
+            href="/admin/menu"
             prefetch={false}
             className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm"
           >

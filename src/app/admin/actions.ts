@@ -1,10 +1,44 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
+import { ADMIN_SESSION_COOKIE_NAME, getAdminAuthConfig } from '@/lib/adminAuth';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 
 const menuTable = process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ?? 'Menu';
+
+export const loginAdminAction = async (formData: FormData) => {
+  const authConfig = getAdminAuthConfig();
+  if (!authConfig) {
+    redirect('/admin/login?error=config');
+  }
+
+  const username = String(formData.get('username') ?? '');
+  const password = String(formData.get('password') ?? '');
+
+  if (username !== authConfig.username || password !== authConfig.password) {
+    redirect('/admin/login?error=invalid');
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_SESSION_COOKIE_NAME, 'authenticated', {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 60 * 60 * 12,
+  });
+
+  redirect('/admin');
+};
+
+export const logoutAdminAction = async () => {
+  const cookieStore = await cookies();
+  cookieStore.delete(ADMIN_SESSION_COOKIE_NAME);
+  redirect('/admin/login');
+};
 
 const parseTags = (raw: FormDataEntryValue | null) => {
   const value = String(raw ?? '').trim();
@@ -64,8 +98,9 @@ export const createMenuAction = async (formData: FormData) => {
 
   revalidatePath('/');
   revalidatePath('/admin');
-  revalidatePath('/admin/add');
-  revalidatePath('/admin/manage');
+  revalidatePath('/admin/menu');
+  revalidatePath('/admin/menu/add');
+  revalidatePath('/admin/menu/manage');
 };
 
 export const updateMenuAction = async (formData: FormData) => {
@@ -91,8 +126,9 @@ export const updateMenuAction = async (formData: FormData) => {
 
   revalidatePath('/');
   revalidatePath('/admin');
-  revalidatePath('/admin/add');
-  revalidatePath('/admin/manage');
+  revalidatePath('/admin/menu');
+  revalidatePath('/admin/menu/add');
+  revalidatePath('/admin/menu/manage');
 };
 
 export const deleteMenuAction = async (formData: FormData) => {
@@ -106,6 +142,7 @@ export const deleteMenuAction = async (formData: FormData) => {
 
   revalidatePath('/');
   revalidatePath('/admin');
-  revalidatePath('/admin/add');
-  revalidatePath('/admin/manage');
+  revalidatePath('/admin/menu');
+  revalidatePath('/admin/menu/add');
+  revalidatePath('/admin/menu/manage');
 };

@@ -2,17 +2,17 @@ import Link from 'next/link';
 
 import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
 
-import { logoutAdminAction } from './actions';
+import { logoutAdminAction } from '../actions';
 
-const AdminPage = () => {
+const AdminMenuPage = () => {
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
       <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
         <header className="mb-8">
           <p className="text-xs font-medium tracking-[0.22em] text-[#876a51]">DEEP DEEP BAR</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Admin</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Menu Admin</h1>
           <p className="mt-3 text-sm text-[#4b5563]">
-            메뉴 관리와 레시피 관리를 선택할 수 있습니다.
+            메뉴 추가와 기존 메뉴 관리를 분리해 운영하기 쉽게 구성했습니다.
           </p>
           <form action={logoutAdminAction} className="mt-4">
             <button
@@ -31,23 +31,27 @@ const AdminPage = () => {
 
         <section className="grid gap-4 sm:grid-cols-2">
           <Link
-            href="/admin/menu"
+            href="/admin/menu/add"
             prefetch={false}
             className="rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-5 transition hover:shadow-[0_10px_24px_rgba(120,84,52,0.12)]"
           >
-            <p className="text-xs font-semibold tracking-wide text-[#876a51]">MENU</p>
-            <h2 className="mt-2 text-xl font-semibold">메뉴 관리</h2>
-            <p className="mt-2 text-sm text-[#4b5563]">메뉴 추가/수정/삭제를 진행합니다.</p>
+            <p className="text-xs font-semibold tracking-wide text-[#876a51]">CREATE</p>
+            <h2 className="mt-2 text-xl font-semibold">메뉴 추가</h2>
+            <p className="mt-2 text-sm text-[#4b5563]">
+              새 칵테일/위스키/사이드 메뉴를 등록합니다.
+            </p>
           </Link>
 
           <Link
-            href="/admin/recipe"
+            href="/admin/menu/manage"
             prefetch={false}
             className="rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-5 transition hover:shadow-[0_10px_24px_rgba(120,84,52,0.12)]"
           >
-            <p className="text-xs font-semibold tracking-wide text-[#876a51]">RECIPE</p>
-            <h2 className="mt-2 text-xl font-semibold">레시피 관리</h2>
-            <p className="mt-2 text-sm text-[#4b5563]">칵테일 레시피를 관리합니다.</p>
+            <p className="text-xs font-semibold tracking-wide text-[#876a51]">MANAGE</p>
+            <h2 className="mt-2 text-xl font-semibold">메뉴 관리</h2>
+            <p className="mt-2 text-sm text-[#4b5563]">
+              검색/카테고리 필터로 메뉴를 찾아 수정 또는 삭제합니다.
+            </p>
           </Link>
         </section>
       </div>
@@ -55,4 +59,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default AdminMenuPage;
