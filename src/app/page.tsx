@@ -75,24 +75,31 @@ const HomePage = async () => {
     return acc;
   }, {});
 
-  const menuData: CocktailMenu[] = ((menuRows as CocktailRow[] | null) ?? []).map((row) => ({
-    id: row.id,
-    category: row.category,
-    name: row.name,
-    nameEn: row.name_en,
-    description: row.description,
-    priceOptions: (activePricesByMenuId[row.id] ?? [])
-      .sort((a, b) => a.display_order - b.display_order)
-      .map((priceOption) => ({
-        priceType: priceOption.price_type,
-        price: priceOption.price,
-        displayOrder: priceOption.display_order,
-      })),
-    abv: formatAbv(row.abv),
-    tasteNote: row.taste_note,
-    tags: row.tags ?? [],
-    isSignature: row.is_signature ?? false,
-  }));
+  const menuData: CocktailMenu[] = ((menuRows as CocktailRow[] | null) ?? [])
+    .map((row) => ({
+      id: row.id,
+      category: row.category,
+      name: row.name,
+      nameEn: row.name_en,
+      description: row.description,
+      priceOptions: (activePricesByMenuId[row.id] ?? [])
+        .sort((a, b) => a.display_order - b.display_order)
+        .map((priceOption) => ({
+          priceType: priceOption.price_type,
+          price: priceOption.price,
+          displayOrder: priceOption.display_order,
+        })),
+      abv: formatAbv(row.abv),
+      tasteNote: row.taste_note,
+      tags: row.tags ?? [],
+      isSignature: row.is_signature ?? false,
+    }))
+    .sort((a, b) => {
+      if (a.isSignature !== b.isSignature) {
+        return a.isSignature ? -1 : 1;
+      }
+      return a.name.localeCompare(b.name, 'ko-KR');
+    });
 
   if (menuData.length === 0) {
     console.warn(
