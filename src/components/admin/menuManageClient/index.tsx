@@ -5,6 +5,7 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { deleteMenuAction, updateMenuAction } from '@/app/admin/actions';
 import LazyRenderOnView from '@/components/admin/lazyRenderOnView';
 import MenuPriceEditor from '@/components/admin/menuPriceEditor';
+import SearchToolbar from '@/components/admin/searchToolbar';
 
 type MenuRow = {
   id: string;
@@ -37,6 +38,7 @@ const categoryOptions = [
   'beer',
   'side',
 ] as const;
+const categorySelectOptions = categoryOptions.map((item) => ({ value: item, label: item }));
 const sortOptions = [
   { value: 'signature_first', label: '시그니처 우선 + 가나다' },
   { value: 'name_asc', label: '이름 가나다' },
@@ -55,18 +57,24 @@ const MenuManageClient = ({ rows }: MenuManageClientProps) => {
   const deferredQuery = useDeferredValue(query);
   const keyword = deferredQuery.trim().toLowerCase();
 
+  const searchIndexedRows = useMemo(
+    () =>
+      rows.map((menu) => ({
+        menu,
+        searchText: `${menu.name} ${menu.name_en} ${menu.description}`.toLowerCase(),
+      })),
+    [rows],
+  );
+
   const filteredRows = useMemo(
     () =>
-      rows
-        .filter((menu) => {
+      searchIndexedRows
+        .filter(({ menu, searchText }) => {
           const matchedCategory = category === 'all' || menu.category === category;
-          const matchedKeyword =
-            !keyword ||
-            menu.name.toLowerCase().includes(keyword) ||
-            menu.name_en.toLowerCase().includes(keyword) ||
-            menu.description.toLowerCase().includes(keyword);
+          const matchedKeyword = !keyword || searchText.includes(keyword);
           return matchedCategory && matchedKeyword;
         })
+        .map((item) => item.menu)
         .sort((a, b) => {
           if (sort === 'name_desc') {
             return b.name.localeCompare(a.name, 'ko-KR', { sensitivity: 'base' });
@@ -84,42 +92,23 @@ const MenuManageClient = ({ rows }: MenuManageClientProps) => {
           if (a.is_signature !== b.is_signature) return a.is_signature ? -1 : 1;
           return a.name.localeCompare(b.name, 'ko-KR', { sensitivity: 'base' });
         }),
-    [rows, category, keyword, sort],
+    [searchIndexedRows, category, keyword, sort],
   );
 
   return (
     <>
-      <section className="mb-5 grid gap-3 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4 sm:grid-cols-[1fr_180px_220px]">
-        <input
-          type="text"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="이름/영문명/설명 검색"
-          className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-        />
-        <select
-          value={category}
-          onChange={(event) => setCategory(event.target.value as (typeof categoryOptions)[number])}
-          className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-        >
-          {categoryOptions.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-        <select
-          value={sort}
-          onChange={(event) => setSort(event.target.value as (typeof sortOptions)[number]['value'])}
-          className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-        >
-          {sortOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </section>
+      <SearchToolbar
+        query={query}
+        onQueryChange={setQuery}
+        queryPlaceholder="이름/영문명/설명 검색"
+        sortValue={sort}
+        onSortChange={(value) => setSort(value as (typeof sortOptions)[number]['value'])}
+        sortOptions={sortOptions}
+        secondaryValue={category}
+        onSecondaryChange={(value) => setCategory(value as (typeof categoryOptions)[number])}
+        secondaryOptions={categorySelectOptions}
+        className="mb-5 grid gap-3 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4 sm:grid-cols-[1fr_180px_220px]"
+      />
 
       <p className="mb-3 text-sm text-[#4b5563]">검색 결과 {filteredRows.length}건</p>
 

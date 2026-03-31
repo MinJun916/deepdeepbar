@@ -3,6 +3,7 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
 import LazyRenderOnView from '@/components/admin/lazyRenderOnView';
+import SearchToolbar from '@/components/admin/searchToolbar';
 
 type StepRow = {
   id: string;
@@ -39,65 +40,66 @@ const RecipeListClient = ({ recipes }: RecipeListClientProps) => {
   const deferredQuery = useDeferredValue(query);
   const keyword = deferredQuery.trim().toLowerCase();
 
+  const searchIndexedRecipes = useMemo(
+    () =>
+      recipes.map((recipe) => ({
+        recipe,
+        createdAtTs: new Date(recipe.created_at).getTime(),
+        searchText: [
+          recipe.menus?.name ?? '',
+          recipe.menus?.name_en ?? '',
+          recipe.mixing_method,
+          recipe.notes ?? '',
+          ...(recipe.recipe_steps ?? []).map((step) => step.instruction),
+        ]
+          .join(' ')
+          .toLowerCase(),
+      })),
+    [recipes],
+  );
+
   const filteredRecipes = useMemo(
     () =>
-      recipes
-        .filter((recipe) => {
+      searchIndexedRecipes
+        .filter(({ searchText }) => {
           if (!keyword) return true;
-          return (
-            (recipe.menus?.name ?? '').toLowerCase().includes(keyword) ||
-            (recipe.menus?.name_en ?? '').toLowerCase().includes(keyword) ||
-            recipe.mixing_method.toLowerCase().includes(keyword) ||
-            (recipe.notes ?? '').toLowerCase().includes(keyword) ||
-            (recipe.recipe_steps ?? []).some((step) =>
-              step.instruction.toLowerCase().includes(keyword),
-            )
-          );
+          return searchText.includes(keyword);
         })
         .sort((a, b) => {
           if (sort === 'menu_name_desc') {
-            return (b.menus?.name ?? '').localeCompare(a.menus?.name ?? '', 'ko-KR', {
+            return (b.recipe.menus?.name ?? '').localeCompare(a.recipe.menus?.name ?? '', 'ko-KR', {
               sensitivity: 'base',
             });
           }
           if (sort === 'method_asc') {
-            return a.mixing_method.localeCompare(b.mixing_method, 'ko-KR', { sensitivity: 'base' });
+            return a.recipe.mixing_method.localeCompare(b.recipe.mixing_method, 'ko-KR', {
+              sensitivity: 'base',
+            });
           }
           if (sort === 'latest') {
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            return b.createdAtTs - a.createdAtTs;
           }
           if (sort === 'oldest') {
-            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            return a.createdAtTs - b.createdAtTs;
           }
-          return (a.menus?.name ?? '').localeCompare(b.menus?.name ?? '', 'ko-KR', {
+          return (a.recipe.menus?.name ?? '').localeCompare(b.recipe.menus?.name ?? '', 'ko-KR', {
             sensitivity: 'base',
           });
-        }),
-    [recipes, keyword, sort],
+        })
+        .map((item) => item.recipe),
+    [searchIndexedRecipes, keyword, sort],
   );
 
   return (
     <>
-      <section className="mb-4 grid gap-2 sm:grid-cols-[1fr_220px]">
-        <input
-          type="text"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="메뉴명/영문명/제조방식/메모 검색"
-          className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-        />
-        <select
-          value={sort}
-          onChange={(event) => setSort(event.target.value as (typeof sortOptions)[number]['value'])}
-          className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
-        >
-          {sortOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </section>
+      <SearchToolbar
+        query={query}
+        onQueryChange={setQuery}
+        queryPlaceholder="메뉴명/영문명/제조방식/메모 검색"
+        sortValue={sort}
+        onSortChange={(value) => setSort(value as (typeof sortOptions)[number]['value'])}
+        sortOptions={sortOptions}
+      />
 
       <section className="space-y-3">
         {filteredRecipes.map((recipe) => (
