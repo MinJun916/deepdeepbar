@@ -10,8 +10,8 @@ const pretendard = localFont({
 });
 
 export const metadata: Metadata = {
-  title: 'DeepDeepBar',
-  description: 'DeepDeepBar',
+  title: '혼술바 딥딥(deepdeep)',
+  description: '혼자와도 함께하는, 밤이 깊어질수록 더 좋아지는 공간. 혼술바 딥딥',
 };
 
 export const viewport: Viewport = {
