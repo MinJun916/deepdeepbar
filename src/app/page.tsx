@@ -25,11 +25,14 @@ const formatAbv = (abv: number | null) => {
 
 const HomePage = async () => {
   const supabase = createSupabaseServerClient();
-  const cocktailsTable = process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ?? 'Menu';
+  const menusTable =
+    process.env.NEXT_PUBLIC_SUPABASE_MENUS_TABLE ??
+    process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ??
+    'menus';
 
   const { data, error } = await supabase
     .schema('public')
-    .from(cocktailsTable)
+    .from(menusTable)
     .select(
       'id, category, name, name_en, description, price, abv, taste_note, tags, is_signature',
       {
@@ -38,7 +41,7 @@ const HomePage = async () => {
     );
 
   if (error) {
-    console.error(`Failed to fetch cocktails from public.${cocktailsTable}:`, error.message);
+    console.error(`Failed to fetch menus from public.${menusTable}:`, error.message);
     return <HomePageView menuData={[]} />;
   }
 
@@ -57,7 +60,7 @@ const HomePage = async () => {
 
   if (menuData.length === 0) {
     console.warn(
-      `[Menu] public.${cocktailsTable} returned 0 rows. Check table name, imported rows, and RLS SELECT policy for anon role.`,
+      `[Menu] public.${menusTable} returned 0 rows. Check table name, imported rows, and RLS SELECT policy for anon role.`,
     );
   }
 

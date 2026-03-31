@@ -23,7 +23,10 @@ type SearchParams = Promise<{
 }>;
 
 const categoryOptions = ['all', 'cocktail', 'whisky', 'non-alcohol', 'highball', 'side'] as const;
-const menuTable = process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ?? 'Menu';
+const menuTable =
+  process.env.NEXT_PUBLIC_SUPABASE_MENUS_TABLE ??
+  process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ??
+  'menus';
 
 const AdminManagePage = async ({ searchParams }: { searchParams: SearchParams }) => {
   const { q = '', category = 'all' } = await searchParams;
