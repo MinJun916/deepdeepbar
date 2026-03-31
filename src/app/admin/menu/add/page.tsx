@@ -5,7 +5,7 @@ import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
 
 import { createMenuAction } from '../../actions';
 
-const categoryOptions = ['cocktail', 'whisky', 'non-alcohol', 'highball', 'side'] as const;
+const categoryOptions = ['cocktail', 'whisky', 'non-alcohol', 'highball', 'beer', 'side'] as const;
 
 const AdminAddPage = () => {
   return (

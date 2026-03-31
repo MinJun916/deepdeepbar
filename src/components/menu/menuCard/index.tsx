@@ -6,7 +6,7 @@ export type MenuPriceOption = {
 
 export type CocktailMenu = {
   id: string;
-  category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'side';
+  category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'beer' | 'side';
   name: string;
   nameEn: string;
   description: string;

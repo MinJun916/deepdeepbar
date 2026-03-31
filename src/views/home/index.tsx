@@ -13,6 +13,7 @@ const categories = [
   { key: 'whisky', label: '위스키' },
   { key: 'non-alcohol', label: '논알콜' },
   { key: 'highball', label: '하이볼' },
+  { key: 'beer', label: '맥주' },
   { key: 'side', label: '사이드' },
 ] as const;
 

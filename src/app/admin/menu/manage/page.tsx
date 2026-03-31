@@ -7,7 +7,7 @@ import { deleteMenuAction, updateMenuAction } from '../../actions';
 
 type MenuRow = {
   id: string;
-  category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'side';
+  category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'beer' | 'side';
   name: string;
   name_en: string;
   description: string;
@@ -31,7 +31,7 @@ type SearchParams = Promise<{
   category?: string;
 }>;
 
-const categoryOptions = ['all', 'cocktail', 'whisky', 'non-alcohol', 'highball', 'side'] as const;
+const categoryOptions = ['all', 'cocktail', 'whisky', 'non-alcohol', 'highball', 'beer', 'side'] as const;
 const menuTable =
   process.env.NEXT_PUBLIC_SUPABASE_MENUS_TABLE ??
   process.env.NEXT_PUBLIC_SUPABASE_COCKTAILS_TABLE ??
