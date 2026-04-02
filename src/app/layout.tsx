@@ -1,6 +1,8 @@
 import localFont from 'next/font/local';
 import './globals.css';
 
+import { AppToaster } from '@/components/sonner';
+
 import type { Metadata, Viewport } from 'next';
 
 const pretendard = localFont({
@@ -26,7 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${pretendard.variable} antialiased`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AppToaster />
+      </body>
     </html>
   );
 }
