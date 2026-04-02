@@ -5,6 +5,7 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { createRecipeAction, deleteRecipeAction, updateRecipeAction } from '@/app/admin/actions';
 import LazyRenderOnView from '@/components/admin/lazyRenderOnView';
 import SearchToolbar from '@/components/admin/searchToolbar';
+import useActionToast from '@/components/admin/useActionToast';
 
 type RecipeRow = {
   id: string;
@@ -38,6 +39,7 @@ type RecipeManageClientProps = {
 const RecipeManageClient = ({ rows, menus, glassTypes }: RecipeManageClientProps) => {
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<(typeof sortOptions)[number]['value']>('menu_name_asc');
+  const { runAction, isPending } = useActionToast();
   const deferredQuery = useDeferredValue(query);
   const keyword = deferredQuery.trim().toLowerCase();
 
@@ -88,7 +90,18 @@ const RecipeManageClient = ({ rows, menus, glassTypes }: RecipeManageClientProps
     <>
       <section className="mb-5 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4">
         <h2 className="text-lg font-semibold">새 레시피 추가</h2>
-        <form action={createRecipeAction} className="mt-3 grid gap-2">
+        <form
+          className="mt-3 grid gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            runAction(createRecipeAction, formData, {
+              loading: '레시피 추가 중...',
+              success: '레시피를 추가했어요.',
+              error: '레시피 추가에 실패했어요',
+            });
+          }}
+        >
           <select
             name="menu_id"
             className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
@@ -139,6 +152,7 @@ const RecipeManageClient = ({ rows, menus, glassTypes }: RecipeManageClientProps
           />
           <button
             type="submit"
+            disabled={isPending}
             className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white"
           >
             레시피 추가
@@ -159,8 +173,16 @@ const RecipeManageClient = ({ rows, menus, glassTypes }: RecipeManageClientProps
         {filteredRows.map((recipe) => (
           <LazyRenderOnView key={recipe.id} minHeight={0}>
             <form
-              action={updateRecipeAction}
               className="rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                runAction(updateRecipeAction, formData, {
+                  loading: '레시피 저장 중...',
+                  success: '레시피를 저장했어요.',
+                  error: '레시피 저장에 실패했어요',
+                });
+              }}
             >
               <input type="hidden" name="id" value={recipe.id} />
               <div className="grid gap-2">
@@ -215,13 +237,26 @@ const RecipeManageClient = ({ rows, menus, glassTypes }: RecipeManageClientProps
               <div className="mt-3 flex gap-2">
                 <button
                   type="submit"
+                  disabled={isPending}
                   className="rounded-lg bg-[#1f2937] px-3 py-2 text-sm text-white"
                 >
                   저장
                 </button>
                 <button
-                  type="submit"
-                  formAction={deleteRecipeAction}
+                  type="button"
+                  disabled={isPending}
+                  onClick={(event) => {
+                    const form = event.currentTarget.closest('form');
+                    if (!form) {
+                      return;
+                    }
+                    const formData = new FormData(form);
+                    runAction(deleteRecipeAction, formData, {
+                      loading: '레시피 삭제 중...',
+                      success: '레시피를 삭제했어요.',
+                      error: '레시피 삭제에 실패했어요',
+                    });
+                  }}
                   className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
                 >
                   삭제

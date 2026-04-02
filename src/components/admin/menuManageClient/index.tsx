@@ -6,6 +6,7 @@ import { deleteMenuAction, updateMenuAction } from '@/app/admin/actions';
 import LazyRenderOnView from '@/components/admin/lazyRenderOnView';
 import MenuPriceEditor from '@/components/admin/menuPriceEditor';
 import SearchToolbar from '@/components/admin/searchToolbar';
+import useActionToast from '@/components/admin/useActionToast';
 
 type MenuRow = {
   id: string;
@@ -54,6 +55,7 @@ const MenuManageClient = ({ rows }: MenuManageClientProps) => {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<(typeof categoryOptions)[number]>('all');
   const [sort, setSort] = useState<(typeof sortOptions)[number]['value']>('signature_first');
+  const { runAction, isPending } = useActionToast();
   const deferredQuery = useDeferredValue(query);
   const keyword = deferredQuery.trim().toLowerCase();
 
@@ -116,8 +118,16 @@ const MenuManageClient = ({ rows }: MenuManageClientProps) => {
         {filteredRows.map((menu) => (
           <LazyRenderOnView key={menu.id} minHeight={560}>
             <form
-              action={updateMenuAction}
               className="rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                runAction(updateMenuAction, formData, {
+                  loading: '메뉴 저장 중...',
+                  success: '메뉴를 저장했어요.',
+                  error: '메뉴 저장에 실패했어요',
+                });
+              }}
             >
               <input type="hidden" name="id" value={menu.id} />
               <div className="grid gap-2">
@@ -199,13 +209,26 @@ const MenuManageClient = ({ rows }: MenuManageClientProps) => {
               <div className="mt-3 flex gap-2">
                 <button
                   type="submit"
+                  disabled={isPending}
                   className="rounded-lg bg-[#1f2937] px-3 py-2 text-sm text-white"
                 >
                   저장
                 </button>
                 <button
-                  type="submit"
-                  formAction={deleteMenuAction}
+                  type="button"
+                  disabled={isPending}
+                  onClick={(event) => {
+                    const form = event.currentTarget.closest('form');
+                    if (!form) {
+                      return;
+                    }
+                    const formData = new FormData(form);
+                    runAction(deleteMenuAction, formData, {
+                      loading: '메뉴 삭제 중...',
+                      success: '메뉴를 삭제했어요.',
+                      error: '메뉴 삭제에 실패했어요',
+                    });
+                  }}
                   className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
                 >
                   삭제
