@@ -1,21 +1,15 @@
 import Link from 'next/link';
 
-import AdminLogoutButton from '@/components/admin/AdminLogoutButton';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
 
 const AdminMenuPage = () => {
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
       <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
-        <header className="mb-8">
-          <p className="text-xs font-medium tracking-[0.22em] text-[#876a51]">DEEP DEEP BAR</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Menu Admin</h1>
-          <p className="mt-3 text-sm text-[#4b5563]">
-            메뉴 추가와 기존 메뉴 관리를 분리해 운영하기 쉽게 구성했습니다.
-          </p>
-          <div className="mt-4">
-            <AdminLogoutButton />
-          </div>
-        </header>
+        <AdminPageHeader
+          title="Menu Admin"
+          description="메뉴 추가와 기존 메뉴 관리를 분리해 운영하기 쉽게 구성했습니다."
+        />
 
         <section className="grid gap-4 sm:grid-cols-2">
           <Link
