@@ -3,11 +3,8 @@
 import Link from 'next/link';
 
 import RecipeListClient from '@/components/admin/recipeListClient';
-import { useGetRecipesQuery } from '@/hooks/queries/useRecipeQuery';
 
 const AdminRecipePageView = () => {
-  const { data: recipes, isLoading, isError } = useGetRecipesQuery();
-
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
       <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
@@ -34,17 +31,7 @@ const AdminRecipePageView = () => {
           </div>
         </header>
 
-        {isLoading ? (
-          <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
-            레시피를 불러오는 중이에요.
-          </div>
-        ) : isError ? (
-          <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
-            레시피를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
-          </div>
-        ) : (
-          <RecipeListClient recipes={recipes ?? []} />
-        )}
+        <RecipeListClient />
       </div>
     </main>
   );

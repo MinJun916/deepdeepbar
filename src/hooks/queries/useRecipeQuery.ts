@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getRecipes } from '@/services/recipe.service';
 
-export const useGetRecipesQuery = () => {
+export const useGetRecipesQuery = (keyword: string) => {
   return useQuery({
-    queryKey: ['recipes'],
-    queryFn: getRecipes,
+    queryKey: ['recipes', keyword],
+    queryFn: () => getRecipes(keyword || undefined),
   });
 };
