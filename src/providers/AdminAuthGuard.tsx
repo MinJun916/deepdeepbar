@@ -11,17 +11,27 @@ type AdminAuthGuardProps = {
 
 const subscribe = () => () => {};
 
+const useIsClient = () =>
+  useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
+
 const AdminAuthGuard = ({ children }: AdminAuthGuardProps) => {
   const router = useRouter();
-  const token = useSyncExternalStore(subscribe, getToken, () => null);
+  const isClient = useIsClient();
+  const token = isClient ? getToken() : null;
 
   useEffect(() => {
-    if (!token) {
-      router.replace('/admin/login');
+    if (!isClient || token) {
+      return;
     }
-  }, [router, token]);
 
-  if (!token) {
+    router.replace('/admin/login');
+  }, [isClient, router, token]);
+
+  if (!isClient || !token) {
     return null;
   }
 
