@@ -1,6 +1,6 @@
 type MenuPriceType = 'default' | 'shot' | 'bottle' | string;
 
-type MenuCategory = 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'beer' | 'side';
+export type MenuCategory = 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'beer' | 'side';
 
 export type MenuPrice = {
   id: string;
@@ -8,6 +8,13 @@ export type MenuPrice = {
   price_type: MenuPriceType;
   price: number;
   display_order: number;
+};
+
+export type MenuPriceRequest = {
+  price_type: MenuPriceType;
+  price: number;
+  display_order: number;
+  is_active?: boolean;
 };
 
 export type Menu = {
@@ -29,4 +36,17 @@ export type MenuListResponse = {
   items: Menu[];
   has_next: boolean;
   next_offset: number | null;
+};
+
+export type CreateMenuRequest = {
+  category: MenuCategory;
+  name: string;
+  name_en: string;
+  description: string;
+  taste_note: string;
+  abv: number;
+  tags: string[];
+  is_signature: boolean;
+  is_display: boolean;
+  prices: MenuPriceRequest[];
 };
