@@ -18,8 +18,7 @@ const SearchToolbar = ({
   return (
     <section
       className={
-        className ??
-        'mb-4 grid gap-2 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4'
+        className ?? 'mb-4 grid gap-2 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-4'
       }
     >
       <input
