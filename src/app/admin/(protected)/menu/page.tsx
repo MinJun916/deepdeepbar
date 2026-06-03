@@ -1,8 +1,6 @@
 import Link from 'next/link';
 
-import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
-
-import { logoutAdminAction } from '../actions';
+import AdminLogoutButton from '@/components/admin/AdminLogoutButton';
 
 const AdminMenuPage = () => {
   return (
@@ -14,19 +12,9 @@ const AdminMenuPage = () => {
           <p className="mt-3 text-sm text-[#4b5563]">
             메뉴 추가와 기존 메뉴 관리를 분리해 운영하기 쉽게 구성했습니다.
           </p>
-          <form action={logoutAdminAction} className="mt-4">
-            <button
-              type="submit"
-              className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm text-[#4b5563]"
-            >
-              로그아웃
-            </button>
-          </form>
-          {!canUseSupabaseAdmin ? (
-            <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              `.env.local`에 `SUPABASE_SECRET_KEY`가 필요합니다.
-            </p>
-          ) : null}
+          <div className="mt-4">
+            <AdminLogoutButton />
+          </div>
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2">

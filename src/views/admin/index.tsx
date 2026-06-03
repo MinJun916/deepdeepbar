@@ -1,10 +1,8 @@
 import Link from 'next/link';
 
-import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
+import AdminLogoutButton from '@/components/admin/AdminLogoutButton';
 
-import { logoutAdminAction } from './actions';
-
-const AdminPage = () => {
+const AdminPageView = () => {
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
       <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
@@ -14,19 +12,9 @@ const AdminPage = () => {
           <p className="mt-3 text-sm text-[#4b5563]">
             메뉴 관리와 레시피 관리를 선택할 수 있습니다.
           </p>
-          <form action={logoutAdminAction} className="mt-4">
-            <button
-              type="submit"
-              className="rounded-lg border border-[#d7cec2] bg-[#f8f3ec] px-3 py-2 text-sm text-[#4b5563]"
-            >
-              로그아웃
-            </button>
-          </form>
-          {!canUseSupabaseAdmin ? (
-            <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              `.env.local`에 `SUPABASE_SECRET_KEY`가 필요합니다.
-            </p>
-          ) : null}
+          <div className="mt-4">
+            <AdminLogoutButton />
+          </div>
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2">
@@ -55,4 +43,4 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;
+export default AdminPageView;

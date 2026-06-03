@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import MenuAddFormClient from '@/components/admin/menuAddFormClient';
-import { canUseSupabaseAdmin } from '@/lib/supabase/admin';
+import ApiPendingNotice from '@/components/admin/ApiPendingNotice';
 
 const AdminAddPage = () => {
   return (
@@ -21,13 +20,7 @@ const AdminAddPage = () => {
           </Link>
         </header>
 
-        {!canUseSupabaseAdmin ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            `.env.local`에 `SUPABASE_SECRET_KEY`를 추가해 주세요.
-          </p>
-        ) : (
-          <MenuAddFormClient />
-        )}
+        <ApiPendingNotice title="메뉴 추가 API 연동 예정" />
       </div>
     </main>
   );

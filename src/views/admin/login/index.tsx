@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { showToast } from '@/components/sonner';
+import { setToken } from '@/lib/token';
 import { loginAdmin } from '@/services/auth.service';
 
 import type { LoginFormData } from '@/types/auth';
@@ -29,7 +30,7 @@ const AdminLoginPageView = () => {
     try {
       const res = await loginAdmin(formData);
 
-      localStorage.setItem('access_token', res.access_token);
+      setToken(res.access_token);
 
       showToast({
         kind: 'success',
