@@ -1,7 +1,9 @@
 import localFont from 'next/font/local';
+
 import './globals.css';
 
 import { AppToaster } from '@/components/sonner';
+import QueryProvider from '@/providers/QueryProvider';
 
 import type { Metadata, Viewport } from 'next';
 
@@ -29,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${pretendard.variable} antialiased`}>
       <body>
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <AppToaster />
       </body>
     </html>
