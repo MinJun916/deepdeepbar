@@ -4,8 +4,12 @@ import { useMemo, useState } from 'react';
 
 import Footer from '@/components/footer';
 import IntroOverlay from '@/components/introOverlay';
-import MenuCard, { type CocktailMenu } from '@/components/menu/menuCard';
+import MenuCard from '@/components/menu/menuCard';
 import ScrollToTopButton from '@/components/scrollToTopButton';
+import { useMenusQuery } from '@/hooks/queries/useMenuQuery';
+import { normalizeMenuTags } from '@/lib/menu';
+
+import type { Menu } from '@/types/menu';
 
 const categories = [
   { key: 'all', label: '전체' },
@@ -21,20 +25,36 @@ type MenuCategory = (typeof categories)[number]['key'];
 
 const currency = new Intl.NumberFormat('ko-KR');
 
-type HomePageViewProps = {
-  menuData: CocktailMenu[];
-};
+const sortMenus = (items: Menu[]) =>
+  [...items].sort((a, b) => {
+    if (a.is_signature !== b.is_signature) {
+      return a.is_signature ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name, 'ko-KR');
+  });
 
-const HomePageView = ({ menuData }: HomePageViewProps) => {
+const HomePageView = () => {
+  const { data, isLoading, isError } = useMenusQuery();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('all');
 
-  const filteredMenuData = useMemo(() => {
+  const displayMenus = useMemo(() => {
+    const items = (data ?? [])
+      .filter((menu) => menu.is_display)
+      .map((menu) => ({
+        ...menu,
+        tags: normalizeMenuTags(menu.tags),
+      }));
+
+    return sortMenus(items);
+  }, [data]);
+
+  const filteredMenus = useMemo(() => {
     if (selectedCategory === 'all') {
-      return menuData;
+      return displayMenus;
     }
 
-    return menuData.filter((menu) => menu.category === selectedCategory);
-  }, [menuData, selectedCategory]);
+    return displayMenus.filter((menu) => menu.category === selectedCategory);
+  }, [displayMenus, selectedCategory]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
@@ -74,14 +94,19 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
         </section>
 
         <section className="space-y-3.5 sm:space-y-4">
-          {filteredMenuData.length > 0 ? (
-            filteredMenuData.map((menu) => (
-              <MenuCard key={menu.id} menu={menu} currency={currency} />
-            ))
+          {isLoading ? (
+            <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
+              메뉴를 불러오는 중이에요.
+            </div>
+          ) : isError ? (
+            <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
+              메뉴를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+            </div>
+          ) : filteredMenus.length > 0 ? (
+            filteredMenus.map((menu) => <MenuCard key={menu.id} menu={menu} currency={currency} />)
           ) : (
             <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
-              메뉴 데이터가 아직 없거나 조회 권한이 설정되지 않았어요. Supabase 테이블 데이터와 RLS
-              정책을 확인해 주세요.
+              표시할 메뉴가 없어요.
             </div>
           )}
         </section>

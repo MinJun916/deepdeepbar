@@ -1,31 +1,14 @@
-export type MenuPriceOption = {
-  priceType: 'default' | 'shot' | 'bottle' | string;
-  price: number;
-  displayOrder: number;
-};
+import { formatAbv } from '@/lib/menu';
 
-export type CocktailMenu = {
-  id: string;
-  category: 'cocktail' | 'whisky' | 'non-alcohol' | 'highball' | 'beer' | 'side';
-  name: string;
-  nameEn: string;
-  description: string;
-  priceOptions?: MenuPriceOption[];
-  tasteNote: string;
-  abv: string;
-  tags: string[];
-  isSignature?: boolean;
-};
+import type { Menu } from '@/types/menu';
 
 type MenuCardProps = {
-  menu: CocktailMenu;
+  menu: Menu;
   currency: Intl.NumberFormat;
 };
 
 const MenuCard = ({ menu, currency }: MenuCardProps) => {
-  const sortedPriceOptions = [...(menu.priceOptions ?? [])].sort(
-    (a, b) => a.displayOrder - b.displayOrder,
-  );
+  const sortedPrices = [...(menu.prices ?? [])].sort((a, b) => a.display_order - b.display_order);
 
   const formatPriceLabel = (priceType: string) => {
     if (priceType === 'default') return '';
@@ -42,26 +25,35 @@ const MenuCard = ({ menu, currency }: MenuCardProps) => {
             <h2 className="text-lg leading-6 font-semibold tracking-tight text-[#111827]">
               {menu.name}
             </h2>
-            {menu.isSignature ? (
+            {menu.is_signature ? (
               <span className="rounded-full border border-[#d3b391] bg-[#f4e6d8] px-2.5 py-1 text-[11px] font-semibold text-[#5a3d26]">
                 SIGNATURE
               </span>
             ) : null}
+            {menu.is_sold_out ? (
+              <span className="rounded-full border border-[#d1d5db] bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-semibold text-[#6b7280]">
+                SOLD OUT
+              </span>
+            ) : null}
           </div>
-          <p className="mt-1 text-xs font-medium tracking-wide text-[#6b7280]">{menu.nameEn}</p>
+          <p className="mt-1 text-xs font-medium tracking-wide text-[#6b7280]">{menu.name_en}</p>
         </div>
-        {sortedPriceOptions.length > 0 ? (
+        {sortedPrices.length > 0 ? (
           <div className="shrink-0 text-right">
-            {sortedPriceOptions.map((option) => (
-              <p
-                key={`${menu.id}-${option.priceType}`}
-                className="text-sm font-semibold text-[#374151]"
-              >
-                {formatPriceLabel(option.priceType)
-                  ? `${formatPriceLabel(option.priceType)} ${currency.format(option.price)}원`
-                  : `${currency.format(option.price)}원`}
-              </p>
-            ))}
+            {sortedPrices.map((price) => {
+              const label = formatPriceLabel(price.price_type);
+
+              return (
+                <p
+                  key={`${menu.id}-${price.price_type}`}
+                  className="text-sm font-semibold text-[#374151]"
+                >
+                  {label
+                    ? `${label} ${currency.format(price.price)}원`
+                    : `${currency.format(price.price)}원`}
+                </p>
+              );
+            })}
           </div>
         ) : (
           <p className="shrink-0 text-sm font-semibold text-[#6b7280]">가격 문의</p>
@@ -73,11 +65,11 @@ const MenuCard = ({ menu, currency }: MenuCardProps) => {
       <dl className="mt-3 grid grid-cols-1 gap-2 text-xs text-[#6b7280] sm:grid-cols-2">
         <div className="rounded-lg border border-[#e2d8cb] bg-[#f6eee4] px-3 py-2">
           <dt className="font-medium text-[#84684c]">Taste</dt>
-          <dd className="mt-0.5 break-keep text-[#374151]">{menu.tasteNote}</dd>
+          <dd className="mt-0.5 break-keep text-[#374151]">{menu.taste_note}</dd>
         </div>
         <div className="rounded-lg border border-[#e2d8cb] bg-[#f6eee4] px-3 py-2">
           <dt className="font-medium text-[#84684c]">ABV</dt>
-          <dd className="mt-0.5 text-[#374151]">{menu.abv}</dd>
+          <dd className="mt-0.5 text-[#374151]">{formatAbv(menu.abv)}</dd>
         </div>
       </dl>
 
