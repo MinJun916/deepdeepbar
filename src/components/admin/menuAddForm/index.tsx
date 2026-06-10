@@ -1,14 +1,17 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import MenuPriceEditor from '@/components/admin/menuPriceEditor';
 import TagInput from '@/components/admin/tagInput';
 import { showToast } from '@/components/sonner';
 import { useCreateMenuMutation } from '@/hooks/mutations/useMenuMutation';
+import { createMenuFormSchema, type CreateMenuFormValues } from '@/schemas/menu';
 
-import type { CreateMenuRequest, MenuCategory, MenuPriceRequest } from '@/types/menu';
+import type { MenuCategory } from '@/types/menu';
 
 const categoryOptions: Array<{ value: MenuCategory; label: string }> = [
   { value: 'cocktail', label: '칵테일' },
@@ -21,45 +24,44 @@ const categoryOptions: Array<{ value: MenuCategory; label: string }> = [
 
 const inputClassName = 'rounded-lg border border-[#d7cec2] bg-white px-3 py-2';
 
+const defaultValues: CreateMenuFormValues = {
+  category: 'cocktail',
+  name: '',
+  name_en: '',
+  description: '',
+  taste_note: '',
+  abv: 0,
+  tags: [],
+  prices: [],
+  is_signature: false,
+  is_display: true,
+};
+
+const FormFieldError = ({ message }: { message?: string }) => {
+  if (!message) {
+    return null;
+  }
+
+  return <p className="text-xs text-red-600">{message}</p>;
+};
+
 const MenuAddForm = () => {
   const router = useRouter();
   const { mutateAsync, isPending } = useCreateMenuMutation();
 
-  const [category, setCategory] = useState<MenuCategory>('cocktail');
-  const [name, setName] = useState('');
-  const [nameEn, setNameEn] = useState('');
-  const [description, setDescription] = useState('');
-  const [abv, setAbv] = useState('');
-  const [tasteNote, setTasteNote] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [prices, setPrices] = useState<MenuPriceRequest[]>([]);
-  const [isSignature, setIsSignature] = useState(false);
-  const [isDisplay, setIsDisplay] = useState(true);
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateMenuFormValues>({
+    resolver: zodResolver(createMenuFormSchema),
+    defaultValues,
+  });
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const parsedAbv = abv.trim() ? Number.parseFloat(abv) : 0;
-    if (abv.trim() && !Number.isFinite(parsedAbv)) {
-      showToast({ kind: 'error', message: '도수(ABV) 형식이 올바르지 않아요.' });
-      return;
-    }
-
-    const payload: CreateMenuRequest = {
-      category,
-      name: name.trim(),
-      name_en: nameEn.trim(),
-      description: description.trim(),
-      taste_note: tasteNote.trim(),
-      abv: parsedAbv,
-      tags,
-      is_signature: isSignature,
-      is_display: isDisplay,
-      prices,
-    };
-
+  const onSubmit = async (values: CreateMenuFormValues) => {
     try {
-      await mutateAsync(payload);
+      await mutateAsync(values);
       showToast({ kind: 'success', message: '메뉴를 추가했어요.' });
       router.push('/admin/menu');
     } catch {
@@ -70,75 +72,95 @@ const MenuAddForm = () => {
   return (
     <form
       className="grid gap-3 rounded-2xl border border-[#e2d8cb] bg-[#f8f3ec] p-5"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
     >
-      <select
-        value={category}
-        onChange={(event) => setCategory(event.target.value as MenuCategory)}
-        className={inputClassName}
-        required
-      >
-        {categoryOptions.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item.label}
-          </option>
-        ))}
-      </select>
-      <input
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        placeholder="메뉴명"
-        className={inputClassName}
-        required
-      />
-      <input
-        value={nameEn}
-        onChange={(event) => setNameEn(event.target.value)}
-        placeholder="영문명"
-        className={inputClassName}
-        required
-      />
-      <textarea
-        value={description}
-        onChange={(event) => setDescription(event.target.value)}
-        placeholder="설명"
-        className={`min-h-24 ${inputClassName}`}
-        required
-      />
-      <input
-        value={abv}
-        onChange={(event) => setAbv(event.target.value)}
-        type="number"
-        step="0.1"
-        min={0}
-        placeholder="ABV(도수)"
-        className={inputClassName}
-      />
-      <input
-        value={tasteNote}
-        onChange={(event) => setTasteNote(event.target.value)}
-        placeholder="Taste Note"
-        className={inputClassName}
-        required
-      />
-      <TagInput tags={tags} onChange={setTags} placeholder="태그 입력 후 Enter" />
-      <MenuPriceEditor onChange={setPrices} />
-      <label className="flex items-center gap-2 text-sm">
+      <div className="grid gap-1">
+        <select
+          {...register('category')}
+          className={clsx(inputClassName, errors.category && 'border-red-300')}
+        >
+          {categoryOptions.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+        <FormFieldError message={errors.category?.message} />
+      </div>
+
+      <div className="grid gap-1">
         <input
-          type="checkbox"
-          checked={isSignature}
-          onChange={(event) => setIsSignature(event.target.checked)}
+          {...register('name')}
+          placeholder="메뉴명"
+          className={clsx(inputClassName, errors.name && 'border-red-300')}
         />
+        <FormFieldError message={errors.name?.message} />
+      </div>
+
+      <div className="grid gap-1">
+        <input
+          {...register('name_en')}
+          placeholder="영문명"
+          className={clsx(inputClassName, errors.name_en && 'border-red-300')}
+        />
+        <FormFieldError message={errors.name_en?.message} />
+      </div>
+
+      <div className="grid gap-1">
+        <textarea
+          {...register('description')}
+          placeholder="설명"
+          className={clsx('min-h-24', inputClassName, errors.description && 'border-red-300')}
+        />
+        <FormFieldError message={errors.description?.message} />
+      </div>
+
+      <div className="grid gap-1">
+        <input
+          {...register('abv', { valueAsNumber: true })}
+          type="number"
+          step="0.1"
+          min={0}
+          placeholder="ABV(도수)"
+          className={clsx(inputClassName, errors.abv && 'border-red-300')}
+        />
+        <FormFieldError message={errors.abv?.message} />
+      </div>
+
+      <div className="grid gap-1">
+        <input
+          {...register('taste_note')}
+          placeholder="Taste Note"
+          className={clsx(inputClassName, errors.taste_note && 'border-red-300')}
+        />
+        <FormFieldError message={errors.taste_note?.message} />
+      </div>
+
+      <Controller
+        name="tags"
+        control={control}
+        render={({ field }) => (
+          <TagInput tags={field.value} onChange={field.onChange} placeholder="태그 입력 후 Enter" />
+        )}
+      />
+
+      <Controller
+        name="prices"
+        control={control}
+        render={({ field }) => <MenuPriceEditor onChange={field.onChange} />}
+      />
+
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" {...register('is_signature')} />
         시그니처 메뉴
       </label>
+
       <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={isDisplay}
-          onChange={(event) => setIsDisplay(event.target.checked)}
-        />
+        <input type="checkbox" {...register('is_display')} />
         메뉴판에 표시
       </label>
+
       <button
         type="submit"
         disabled={isPending}
