@@ -111,13 +111,13 @@ const MenuAddForm = () => {
         type="number"
         step="0.1"
         min={0}
-        placeholder="도수 ABV (선택)"
+        placeholder="ABV(도수)"
         className={inputClassName}
       />
       <input
         value={tasteNote}
         onChange={(event) => setTasteNote(event.target.value)}
-        placeholder="테이스트 노트"
+        placeholder="Taste Note"
         className={inputClassName}
         required
       />
