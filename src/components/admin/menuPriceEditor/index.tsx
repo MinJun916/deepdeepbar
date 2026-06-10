@@ -14,6 +14,7 @@ type PriceOptionRow = {
 
 type MenuPriceEditorProps = {
   onChange: (prices: MenuPriceRequest[]) => void;
+  defaultPrices?: MenuPriceRequest[];
 };
 
 const priceTypeOptions: Array<{ value: PriceType; label: string }> = [
@@ -27,6 +28,14 @@ const createRow = (priceType: PriceType = 'default', price = ''): PriceOptionRow
   priceType,
   price,
 });
+
+const pricesToRows = (prices: MenuPriceRequest[]): PriceOptionRow[] => {
+  if (!prices.length) {
+    return [createRow()];
+  }
+
+  return prices.map((price) => createRow(price.price_type as PriceType, String(price.price)));
+};
 
 const rowsToPrices = (rows: PriceOptionRow[]): MenuPriceRequest[] => {
   const prices: MenuPriceRequest[] = [];
@@ -48,8 +57,8 @@ const rowsToPrices = (rows: PriceOptionRow[]): MenuPriceRequest[] => {
   return prices;
 };
 
-const MenuPriceEditor = ({ onChange }: MenuPriceEditorProps) => {
-  const [rows, setRows] = useState<PriceOptionRow[]>(() => [createRow()]);
+const MenuPriceEditor = ({ onChange, defaultPrices = [] }: MenuPriceEditorProps) => {
+  const [rows, setRows] = useState<PriceOptionRow[]>(() => pricesToRows(defaultPrices));
 
   const syncRows = (nextRows: PriceOptionRow[]) => {
     setRows(nextRows);

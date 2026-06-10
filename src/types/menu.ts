@@ -50,3 +50,7 @@ export type CreateMenuRequest = {
   is_display: boolean;
   prices: MenuPriceRequest[];
 };
+
+export type UpdateMenuRequest = CreateMenuRequest & {
+  is_sold_out: boolean;
+};

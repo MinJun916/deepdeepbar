@@ -33,3 +33,9 @@ export const createMenuFormSchema = z.object({
 });
 
 export type CreateMenuFormValues = z.infer<typeof createMenuFormSchema>;
+
+export const updateMenuFormSchema = createMenuFormSchema.extend({
+  is_sold_out: z.boolean(),
+});
+
+export type UpdateMenuFormValues = z.infer<typeof updateMenuFormSchema>;
