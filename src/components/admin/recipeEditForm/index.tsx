@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 
 import RecipeStepsEditor from '@/components/admin/recipeStepsEditor';
 import { showToast } from '@/components/sonner';
+import { useUpdateRecipeMutation } from '@/hooks/mutations/useRecipeMutation';
 import {
   glassTypeOptions,
   updateRecipeFormSchema,
@@ -65,14 +66,27 @@ const RecipeEditForm = ({ recipe, onCancel, onSaved }: RecipeEditFormProps) => {
     defaultValues: recipeToFormValues(recipe),
   });
 
+  const { mutate: updateRecipe } = useUpdateRecipeMutation();
+
   const onSubmit = (values: UpdateRecipeFormValues) => {
     const payload = withOrderedSteps(values);
 
-    // TODO: PATCH /recipes/:id — updateRecipe(recipe.id, payload) mutation 연동
-    console.log('[updateRecipe]', recipe.id, payload);
-    showToast({ kind: 'success', message: '레시피를 수정했어요. (API 연동 전)' });
-    onSaved(recipe.id, payload);
-    onCancel();
+    updateRecipe(
+      { recipeId: recipe.id, recipeData: payload },
+      {
+        onSuccess: () => {
+          showToast({ kind: 'success', message: '레시피를 수정했어요.' });
+          onSaved(recipe.id, payload);
+          onCancel();
+        },
+        onError: () => {
+          showToast({
+            kind: 'error',
+            message: '레시피를 수정하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          });
+        },
+      },
+    );
   };
 
   return (

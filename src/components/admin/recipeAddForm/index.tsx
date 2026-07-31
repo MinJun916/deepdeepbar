@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 
 import RecipeStepsEditor from '@/components/admin/recipeStepsEditor';
 import { showToast } from '@/components/sonner';
+import { useCreateRecipeMutation } from '@/hooks/mutations/useRecipeMutation';
 import { useMenusQuery } from '@/hooks/queries/useMenuQuery';
 import {
   createRecipeFormSchema,
@@ -45,6 +46,8 @@ const RecipeAddForm = () => {
   const router = useRouter();
   const { data: menus = [], isLoading: isMenusLoading } = useMenusQuery();
 
+  const { mutate: createRecipe } = useCreateRecipeMutation();
+
   const {
     register,
     control,
@@ -58,10 +61,18 @@ const RecipeAddForm = () => {
   const onSubmit = (values: CreateRecipeFormValues) => {
     const payload = withOrderedSteps(values);
 
-    // TODO: POST /recipes — createRecipe(payload) mutation 연동
-    console.log('[createRecipe]', payload);
-    showToast({ kind: 'success', message: '레시피를 추가했어요. (API 연동 전)' });
-    router.push('/admin/recipe/manage');
+    createRecipe(payload, {
+      onSuccess: () => {
+        showToast({ kind: 'success', message: '레시피를 추가했어요.' });
+        router.push('/admin/recipe/manage');
+      },
+      onError: () => {
+        showToast({
+          kind: 'error',
+          message: '레시피를 추가하지 못했어요. 잠시 후 다시 시도해 주세요.',
+        });
+      },
+    });
   };
 
   return (
@@ -114,11 +125,7 @@ const RecipeAddForm = () => {
 
       <div className="grid gap-1">
         <label className="text-xs font-medium text-[#6b7280]">가니쉬</label>
-        <input
-          {...register('garnish')}
-          placeholder="가니쉬 (선택)"
-          className={inputClassName}
-        />
+        <input {...register('garnish')} placeholder="가니쉬 (선택)" className={inputClassName} />
       </div>
 
       <div className="grid gap-1">

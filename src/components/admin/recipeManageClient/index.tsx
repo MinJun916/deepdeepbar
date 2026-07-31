@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import RecipeEditForm from '@/components/admin/recipeEditForm';
 import SearchToolbar from '@/components/admin/searchToolbar';
 import { showToast } from '@/components/sonner';
+import { useDeleteRecipeMutation } from '@/hooks/mutations/useRecipeMutation';
 import { useGetRecipesQuery } from '@/hooks/queries/useRecipeQuery';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { glassTypeOptions, type UpdateRecipeFormValues } from '@/schemas/recipe';
@@ -44,8 +45,13 @@ const RecipeManageClient = () => {
   const [deletedIds, setDeletedIds] = useState<Set<string>>(() => new Set());
   const [localPatches, setLocalPatches] = useState<Record<string, RecipeLocalPatch>>({});
 
+  const { mutate: deleteRecipe } = useDeleteRecipeMutation();
+
   const visibleRecipes = useMemo(
-    () => recipes.filter((recipe) => !deletedIds.has(recipe.id)).map((recipe) => applyPatch(recipe, localPatches[recipe.id])),
+    () =>
+      recipes
+        .filter((recipe) => !deletedIds.has(recipe.id))
+        .map((recipe) => applyPatch(recipe, localPatches[recipe.id])),
     [recipes, deletedIds, localPatches],
   );
 
@@ -55,13 +61,21 @@ const RecipeManageClient = () => {
       return;
     }
 
-    // TODO: DELETE /recipes/:id — deleteRecipe(recipe.id) mutation 연동
-    console.log('[deleteRecipe]', recipe.id);
-    setDeletedIds((current) => new Set(current).add(recipe.id));
-    if (editingRecipeId === recipe.id) {
-      setEditingRecipeId(null);
-    }
-    showToast({ kind: 'success', message: '레시피를 삭제했어요. (API 연동 전)' });
+    deleteRecipe(recipe.id, {
+      onSuccess: () => {
+        setDeletedIds((current) => new Set(current).add(recipe.id));
+        if (editingRecipeId === recipe.id) {
+          setEditingRecipeId(null);
+        }
+        showToast({ kind: 'success', message: '레시피를 삭제했어요.' });
+      },
+      onError: () => {
+        showToast({
+          kind: 'error',
+          message: '레시피를 삭제하지 못했어요. 잠시 후 다시 시도해 주세요.',
+        });
+      },
+    });
   };
 
   const handleSaved = (recipeId: string, values: UpdateRecipeFormValues) => {
