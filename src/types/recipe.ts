@@ -4,7 +4,7 @@ type MenuForRecipe = {
   name_en: string;
 };
 
-type GlassTypeCode =
+export type GlassTypeCode =
   | 'double_shot_glass'
   | 'highball_glass'
   | 'hurricane_glass'
@@ -28,6 +28,28 @@ type Step = {
   recipe_id: string;
   step_order: number;
   instruction: string;
+};
+
+export type RecipeStepRequest = {
+  step_order: number;
+  instruction: string;
+};
+
+export type CreateRecipeRequest = {
+  menu_id: string;
+  glass_type: GlassTypeCode;
+  garnish: string;
+  mixing_method: string;
+  notes: string;
+  steps: RecipeStepRequest[];
+};
+
+export type UpdateRecipeRequest = {
+  glass_type: GlassTypeCode;
+  garnish: string;
+  mixing_method: string;
+  notes: string;
+  steps: RecipeStepRequest[];
 };
 
 export type RecipeResponse = {
