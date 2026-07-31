@@ -4,8 +4,13 @@ import { useMemo, useState } from 'react';
 
 import Footer from '@/components/footer';
 import IntroOverlay from '@/components/introOverlay';
-import MenuCard, { type CocktailMenu } from '@/components/menu/menuCard';
+import MenuCard from '@/components/menu/menuCard';
 import ScrollToTopButton from '@/components/scrollToTopButton';
+import { useMenusQuery } from '@/hooks/queries/useMenuQuery';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import { normalizeMenuTags } from '@/lib/menu';
+
+import type { Menu } from '@/types/menu';
 
 const categories = [
   { key: 'all', label: '전체' },
@@ -21,20 +26,39 @@ type MenuCategory = (typeof categories)[number]['key'];
 
 const currency = new Intl.NumberFormat('ko-KR');
 
-type HomePageViewProps = {
-  menuData: CocktailMenu[];
-};
+const sortMenus = (items: Menu[]) =>
+  [...items].sort((a, b) => {
+    if (a.is_signature !== b.is_signature) {
+      return a.is_signature ? -1 : 1;
+    }
+    return a.name.localeCompare(b.name, 'ko-KR');
+  });
 
-const HomePageView = ({ menuData }: HomePageViewProps) => {
+const HomePageView = () => {
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('all');
+  const [searchKeyword, setSearchKeyword] = useState('');
 
-  const filteredMenuData = useMemo(() => {
+  const debouncedSearchKeyword = useDebouncedValue(searchKeyword.trim(), 300);
+  const { data, isLoading, isError } = useMenusQuery(debouncedSearchKeyword);
+
+  const displayMenus = useMemo(() => {
+    const items = (data ?? [])
+      .filter((menu) => menu.is_display)
+      .map((menu) => ({
+        ...menu,
+        tags: normalizeMenuTags(menu.tags),
+      }));
+
+    return sortMenus(items);
+  }, [data]);
+
+  const filteredMenus = useMemo(() => {
     if (selectedCategory === 'all') {
-      return menuData;
+      return displayMenus;
     }
 
-    return menuData.filter((menu) => menu.category === selectedCategory);
-  }, [menuData, selectedCategory]);
+    return displayMenus.filter((menu) => menu.category === selectedCategory);
+  }, [displayMenus, selectedCategory]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(120%_90%_at_50%_0%,#fcf8f2_0%,#f3ece2_56%,#ece2d6_100%)] text-[#1f2937]">
@@ -49,6 +73,29 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
             혼자와도 함께하는, 밤이 깊어질수록 더 좋아지는 공간. 혼술바 딥딥
           </p>
         </header>
+
+        <section className="mb-4 sm:mb-5">
+          <div className="relative">
+            <input
+              type="search"
+              value={searchKeyword}
+              onChange={(event) => setSearchKeyword(event.target.value)}
+              placeholder="메뉴명, 영문명, 태그 검색"
+              aria-label="메뉴 검색"
+              className="w-full rounded-full border border-[#d7cec2] bg-[#f8f3ec] py-2.5 pr-10 pl-4 text-sm text-[#1f2937] transition outline-none placeholder:text-[#9ca3af] focus:border-[#c29a74] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+            />
+            {searchKeyword ? (
+              <button
+                type="button"
+                onClick={() => setSearchKeyword('')}
+                aria-label="검색어 지우기"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-[#9ca3af] transition hover:text-[#4b5563]"
+              >
+                ×
+              </button>
+            ) : null}
+          </div>
+        </section>
 
         <section className="hide-scrollbar -mx-1 mb-5 overflow-x-auto px-1 sm:mb-6">
           <div className="flex min-w-max gap-2">
@@ -74,14 +121,19 @@ const HomePageView = ({ menuData }: HomePageViewProps) => {
         </section>
 
         <section className="space-y-3.5 sm:space-y-4">
-          {filteredMenuData.length > 0 ? (
-            filteredMenuData.map((menu) => (
-              <MenuCard key={menu.id} menu={menu} currency={currency} />
-            ))
+          {isLoading ? (
+            <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
+              메뉴를 불러오는 중이에요.
+            </div>
+          ) : isError ? (
+            <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
+              메뉴를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+            </div>
+          ) : filteredMenus.length > 0 ? (
+            filteredMenus.map((menu) => <MenuCard key={menu.id} menu={menu} currency={currency} />)
           ) : (
             <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
-              메뉴 데이터가 아직 없거나 조회 권한이 설정되지 않았어요. Supabase 테이블 데이터와 RLS
-              정책을 확인해 주세요.
+              {debouncedSearchKeyword.trim() ? '검색 결과가 없어요.' : '표시할 메뉴가 없어요.'}
             </div>
           )}
         </section>

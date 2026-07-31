@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+
+import type { MenuPriceRequest } from '@/types/menu';
 
 type PriceType = 'default' | 'shot' | 'bottle';
 
@@ -11,8 +13,8 @@ type PriceOptionRow = {
 };
 
 type MenuPriceEditorProps = {
-  name: string;
-  defaultSerializedValue?: string;
+  onChange: (prices: MenuPriceRequest[]) => void;
+  defaultPrices?: MenuPriceRequest[];
 };
 
 const priceTypeOptions: Array<{ value: PriceType; label: string }> = [
@@ -27,61 +29,61 @@ const createRow = (priceType: PriceType = 'default', price = ''): PriceOptionRow
   price,
 });
 
-const parseSerializedValue = (value?: string) => {
-  if (!value) {
+const pricesToRows = (prices: MenuPriceRequest[]): PriceOptionRow[] => {
+  if (!prices.length) {
     return [createRow()];
   }
 
-  const rows = value
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [typeRaw, priceRaw] = line.split('|').map((part) => part.trim());
-      const priceType: PriceType =
-        typeRaw === 'shot' || typeRaw === 'bottle' || typeRaw === 'default' ? typeRaw : 'default';
-      return createRow(priceType, priceRaw ?? '');
-    });
-
-  return rows.length > 0 ? rows : [createRow()];
+  return prices.map((price) => createRow(price.price_type as PriceType, String(price.price)));
 };
 
-const MenuPriceEditor = ({ name, defaultSerializedValue }: MenuPriceEditorProps) => {
-  const [rows, setRows] = useState<PriceOptionRow[]>(parseSerializedValue(defaultSerializedValue));
+const rowsToPrices = (rows: PriceOptionRow[]): MenuPriceRequest[] => {
+  const prices: MenuPriceRequest[] = [];
 
-  const serializedValue = useMemo(
-    () =>
-      rows
-        .map((row) => `${row.priceType}|${row.price.trim()}`)
-        .filter((line) => {
-          const [, price] = line.split('|');
-          return Boolean(price);
-        })
-        .join('\n'),
-    [rows],
-  );
+  rows.forEach((row, index) => {
+    const price = Number.parseInt(row.price, 10);
+    if (!Number.isFinite(price)) {
+      return;
+    }
+
+    prices.push({
+      price_type: row.priceType,
+      price,
+      display_order: index + 1,
+      is_active: true,
+    });
+  });
+
+  return prices;
+};
+
+const MenuPriceEditor = ({ onChange, defaultPrices = [] }: MenuPriceEditorProps) => {
+  const [rows, setRows] = useState<PriceOptionRow[]>(() => pricesToRows(defaultPrices));
+
+  const syncRows = (nextRows: PriceOptionRow[]) => {
+    setRows(nextRows);
+    onChange(rowsToPrices(nextRows));
+  };
 
   const updateRow = (
     rowId: string,
     key: keyof Pick<PriceOptionRow, 'priceType' | 'price'>,
-    value: string,
+    fieldValue: string,
   ) => {
-    setRows((prev) => prev.map((row) => (row.id === rowId ? { ...row, [key]: value } : row)));
+    syncRows(rows.map((row) => (row.id === rowId ? { ...row, [key]: fieldValue } : row)));
   };
 
-  const addRow = () => setRows((prev) => [...prev, createRow()]);
+  const addRow = () => {
+    syncRows([...rows, createRow()]);
+  };
+
   const removeRow = (rowId: string) => {
-    setRows((prev) => {
-      if (prev.length <= 1) {
-        return [createRow()];
-      }
-      return prev.filter((row) => row.id !== rowId);
-    });
+    const nextRows = rows.length <= 1 ? [createRow()] : rows.filter((row) => row.id !== rowId);
+    syncRows(nextRows);
   };
 
   return (
     <div className="rounded-lg border border-[#d7cec2] bg-white p-3">
-      <input type="hidden" name={name} value={serializedValue} />
       <p className="mb-2 text-xs font-medium text-[#6b7280]">옵션 가격</p>
       <div className="space-y-2">
         {rows.map((row) => (
