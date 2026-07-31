@@ -7,6 +7,7 @@ import IntroOverlay from '@/components/introOverlay';
 import MenuCard from '@/components/menu/menuCard';
 import ScrollToTopButton from '@/components/scrollToTopButton';
 import { useMenusQuery } from '@/hooks/queries/useMenuQuery';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { normalizeMenuTags } from '@/lib/menu';
 
 import type { Menu } from '@/types/menu';
@@ -34,8 +35,11 @@ const sortMenus = (items: Menu[]) =>
   });
 
 const HomePageView = () => {
-  const { data, isLoading, isError } = useMenusQuery();
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory>('all');
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  const debouncedSearchKeyword = useDebouncedValue(searchKeyword.trim(), 300);
+  const { data, isLoading, isError } = useMenusQuery(debouncedSearchKeyword);
 
   const displayMenus = useMemo(() => {
     const items = (data ?? [])
@@ -69,6 +73,29 @@ const HomePageView = () => {
             혼자와도 함께하는, 밤이 깊어질수록 더 좋아지는 공간. 혼술바 딥딥
           </p>
         </header>
+
+        <section className="mb-4 sm:mb-5">
+          <div className="relative">
+            <input
+              type="search"
+              value={searchKeyword}
+              onChange={(event) => setSearchKeyword(event.target.value)}
+              placeholder="메뉴명, 영문명, 태그 검색"
+              aria-label="메뉴 검색"
+              className="w-full rounded-full border border-[#d7cec2] bg-[#f8f3ec] py-2.5 pr-10 pl-4 text-sm text-[#1f2937] transition outline-none placeholder:text-[#9ca3af] focus:border-[#c29a74] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+            />
+            {searchKeyword ? (
+              <button
+                type="button"
+                onClick={() => setSearchKeyword('')}
+                aria-label="검색어 지우기"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-[#9ca3af] transition hover:text-[#4b5563]"
+              >
+                ×
+              </button>
+            ) : null}
+          </div>
+        </section>
 
         <section className="hide-scrollbar -mx-1 mb-5 overflow-x-auto px-1 sm:mb-6">
           <div className="flex min-w-max gap-2">
@@ -106,7 +133,7 @@ const HomePageView = () => {
             filteredMenus.map((menu) => <MenuCard key={menu.id} menu={menu} currency={currency} />)
           ) : (
             <div className="rounded-2xl border border-[#d7cec2] bg-[#f8f3ec] p-5 text-sm text-[#4b5563]">
-              표시할 메뉴가 없어요.
+              {debouncedSearchKeyword.trim() ? '검색 결과가 없어요.' : '표시할 메뉴가 없어요.'}
             </div>
           )}
         </section>
