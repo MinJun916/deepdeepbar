@@ -32,12 +32,6 @@ export type Menu = {
   prices: MenuPrice[];
 };
 
-export type MenuListResponse = {
-  items: Menu[];
-  has_next: boolean;
-  next_offset: number | null;
-};
-
 export type CreateMenuRequest = {
   category: MenuCategory;
   name: string;
