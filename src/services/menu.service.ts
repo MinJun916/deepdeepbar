@@ -1,10 +1,11 @@
-import { api } from '@/lib/axios';
+import { api, publicApi } from '@/lib/axios';
 
 import type { CreateMenuRequest, Menu, UpdateMenuRequest } from '@/types/menu';
 
-export const getMenus = async (keyword?: string) => {
-  const res = await api.get<Menu[]>('/menus', {
+export const getMenus = async (keyword?: string, signal?: AbortSignal) => {
+  const res = await publicApi.get<Menu[]>('/menus/', {
     params: keyword ? { keyword } : undefined,
+    signal,
   });
   return res.data;
 };
