@@ -14,6 +14,8 @@ const AdminLoginPageView = () => {
     email: '',
     password: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const router = useRouter();
 
@@ -26,6 +28,9 @@ const AdminLoginPageView = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setErrorMessage('');
 
     try {
       const res = await loginAdmin(formData);
@@ -38,11 +43,15 @@ const AdminLoginPageView = () => {
       });
 
       router.replace('/admin');
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '로그인에 실패했어요.';
+      setErrorMessage(message);
       showToast({
         kind: 'error',
-        message: '로그인에 실패했어요',
+        message,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -72,11 +81,17 @@ const AdminLoginPageView = () => {
               className="rounded-lg border border-[#d7cec2] bg-white px-3 py-2"
               required
             />
+            {errorMessage ? (
+              <p role="alert" className="rounded-lg bg-[#f8e8e5] px-3 py-2 text-sm text-[#963f38]">
+                {errorMessage}
+              </p>
+            ) : null}
             <button
               type="submit"
-              className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white"
+              disabled={isSubmitting}
+              className="rounded-lg bg-[#1f2937] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
             >
-              로그인
+              {isSubmitting ? '로그인 중…' : '로그인'}
             </button>
           </form>
         </section>

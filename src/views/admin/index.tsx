@@ -8,10 +8,21 @@ const AdminPageView = () => {
       <div className="mx-auto w-full max-w-4xl px-4 pt-10 pb-16 sm:px-6">
         <AdminPageHeader
           title="Admin"
-          description="메뉴 관리와 레시피 관리를 선택할 수 있습니다."
+          description="매장 운영과 메뉴·레시피 관리를 선택할 수 있습니다."
         />
 
         <section className="grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/admin/orders"
+            prefetch={false}
+            className="rounded-2xl border border-[#cdbca9] bg-[#f3e5d6] p-5 transition hover:shadow-[0_10px_24px_rgba(120,84,52,0.12)] sm:col-span-2"
+          >
+            <p className="text-xs font-semibold tracking-wide text-[#876a51]">STORE OPERATIONS</p>
+            <h2 className="mt-2 text-xl font-semibold">주문·테이블 운영</h2>
+            <p className="mt-2 text-sm text-[#4b5563]">
+              활성 테이블, 포스 등록, 체크아웃과 주문 모드를 관리합니다.
+            </p>
+          </Link>
           <Link
             href="/admin/menu"
             prefetch={false}
