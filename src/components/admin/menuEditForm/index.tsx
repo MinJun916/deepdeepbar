@@ -6,6 +6,8 @@ import { Controller, useForm } from 'react-hook-form';
 
 import MenuPriceEditor from '@/components/admin/menuPriceEditor';
 import TagInput from '@/components/admin/tagInput';
+import { showToast } from '@/components/sonner';
+import { useUpdateMenuMutation } from '@/hooks/mutations/useMenuMutation';
 import { normalizeMenuTags } from '@/lib/menu';
 import { updateMenuFormSchema, type UpdateMenuFormValues } from '@/schemas/menu';
 
@@ -67,8 +69,23 @@ const MenuEditForm = ({ menu, onCancel }: MenuEditFormProps) => {
     defaultValues: menuToFormValues(menu),
   });
 
+  const { mutate: updateMenu } = useUpdateMenuMutation();
+
   const onSubmit = (values: UpdateMenuFormValues) => {
-    console.log('[updateMenu]', menu.id, values);
+    updateMenu(
+      { menuId: menu.id, menuData: values },
+      {
+        onSuccess: () => {
+          showToast({ kind: 'success', message: '메뉴를 수정했어요.' });
+        },
+        onError: () => {
+          showToast({
+            kind: 'error',
+            message: '메뉴를 수정하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          });
+        },
+      },
+    );
     onCancel();
   };
 

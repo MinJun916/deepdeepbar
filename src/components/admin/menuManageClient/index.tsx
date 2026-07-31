@@ -5,6 +5,8 @@ import { useMemo, useState } from 'react';
 
 import MenuEditForm from '@/components/admin/menuEditForm';
 import SearchToolbar from '@/components/admin/searchToolbar';
+import { showToast } from '@/components/sonner';
+import { useDeleteMenuMutation } from '@/hooks/mutations/useMenuMutation';
 import { useMenusQuery } from '@/hooks/queries/useMenuQuery';
 import { formatAbv, normalizeMenuTags } from '@/lib/menu';
 
@@ -71,6 +73,8 @@ const MenuManageClient = () => {
   const [editingMenuId, setEditingMenuId] = useState<string | null>(null);
   const [quickPatches, setQuickPatches] = useState<Record<string, MenuQuickPatch>>({});
 
+  const { mutate: deleteMenu } = useDeleteMenuMutation();
+
   const filteredMenus = useMemo(
     () => filterMenus(menus, query, categoryFilter),
     [menus, query, categoryFilter],
@@ -94,7 +98,6 @@ const MenuManageClient = () => {
       ...current,
       [menu.id]: { ...current[menu.id], [field]: nextValue },
     }));
-    console.log('[patchMenu]', menu.id, { [field]: nextValue });
   };
 
   const handleDelete = (menu: Menu) => {
@@ -103,10 +106,17 @@ const MenuManageClient = () => {
       return;
     }
 
-    console.log('[deleteMenu]', menu.id);
-    if (editingMenuId === menu.id) {
-      setEditingMenuId(null);
-    }
+    deleteMenu(menu.id, {
+      onSuccess: () => {
+        showToast({ kind: 'success', message: '메뉴를 삭제했어요.' });
+      },
+      onError: () => {
+        showToast({
+          kind: 'error',
+          message: '메뉴를 삭제하지 못했어요. 잠시 후 다시 시도해 주세요.',
+        });
+      },
+    });
   };
 
   const toggleEdit = (menuId: string) => {
