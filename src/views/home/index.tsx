@@ -82,7 +82,7 @@ const HomePageView = () => {
               onChange={(event) => setSearchKeyword(event.target.value)}
               placeholder="메뉴명, 영문명, 태그 검색"
               aria-label="메뉴 검색"
-              className="w-full rounded-full border border-[#d7cec2] bg-[#f8f3ec] py-2.5 pr-10 pl-4 text-sm text-[#1f2937] transition outline-none placeholder:text-[#9ca3af] focus:border-[#c29a74] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+              className="w-full rounded-full border border-[#d7cec2] bg-[#f8f3ec] py-2.5 pr-10 pl-4 text-base text-[#1f2937] transition outline-none placeholder:text-[#9ca3af] focus:border-[#c29a74] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             />
             {searchKeyword ? (
               <button
