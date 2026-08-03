@@ -65,12 +65,14 @@ const HomePageView = () => {
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [selectedPriceId, setSelectedPriceId] = useState('');
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [cartHighlighted, setCartHighlighted] = useState(false);
   const [tableNumber, setTableNumber] = useState('');
   const [tableError, setTableError] = useState('');
   const [isEntering, setIsEntering] = useState(false);
   const [isOrdering, setIsOrdering] = useState(false);
   const [orderError, setOrderError] = useState('');
   const idempotencyRef = useRef<{ signature: string; key: string } | null>(null);
+  const cartHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const debouncedSearchKeyword = useDebouncedValue(searchKeyword.trim(), 300);
   const { data, isLoading, isError, refetch: refetchMenus } = useMenusQuery(debouncedSearchKeyword);
@@ -146,6 +148,13 @@ const HomePageView = () => {
     return () => window.removeEventListener('focus', onFocus);
   }, [refreshCustomerState]);
 
+  useEffect(
+    () => () => {
+      if (cartHighlightTimerRef.current) clearTimeout(cartHighlightTimerRef.current);
+    },
+    [],
+  );
+
   const displayMenus = useMemo(
     () =>
       sortMenus(
@@ -198,7 +207,9 @@ const HomePageView = () => {
         )
       : [...cart, newItem];
     updateCart(next);
-    showToast({ kind: 'success', message: `${menu.name}을(를) 담았어요.` });
+    setCartHighlighted(true);
+    if (cartHighlightTimerRef.current) clearTimeout(cartHighlightTimerRef.current);
+    cartHighlightTimerRef.current = setTimeout(() => setCartHighlighted(false), 650);
   };
 
   const openMenu = (menu: Menu) => {
@@ -337,7 +348,7 @@ const HomePageView = () => {
                     type="button"
                     onClick={() => setPanel('cart')}
                     aria-label={`장바구니 ${cartCount}개, ${formatWon(cartTotal)}`}
-                    className="relative grid h-11 w-11 place-items-center rounded-full bg-[#2f2924] text-white shadow-[0_8px_18px_rgba(47,41,36,0.2)] transition hover:bg-[#463b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#876a51]"
+                    className={`relative grid h-11 w-11 place-items-center rounded-full bg-[#2f2924] text-white shadow-[0_8px_18px_rgba(47,41,36,0.2)] transition duration-200 hover:bg-[#463b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#876a51] ${cartHighlighted ? 'scale-110 ring-4 ring-[#b76e48]/25' : ''}`}
                   >
                     <CartIcon />
                     {cartCount > 0 ? (
@@ -346,6 +357,9 @@ const HomePageView = () => {
                       </span>
                     ) : null}
                   </button>
+                  <span className="sr-only" aria-live="polite">
+                    {cartHighlighted ? `장바구니에 담았어요. 현재 ${cartCount}개` : ''}
+                  </span>
                 </>
               ) : null}
             </div>
